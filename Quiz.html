@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="sv">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rättvisa Malmö Quiz</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #faf8f3;
+      color: #311e10;
+      overflow-x: hidden;
+      height: 100%;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .background-emoji {
+      position: fixed;
+      font-size: 2.5rem;
+      pointer-events: none;
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100%;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #dd6031;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #311e10;
+      opacity: 0.8;
+    }
+
+    .difficulty-selector {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .difficulty-btn {
+      padding: 1rem 2rem;
+      border: 3px solid #dd6031;
+      background: #ffffff;
+      color: #311e10;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .difficulty-level {
+      font-size: 0.85rem;
+      font-weight: normal;
+      opacity: 0.7;
+    }
+
+    .difficulty-btn:hover {
+      background: #ffea94;
+      transform: translateY(-2px);
+    }
+
+    .difficulty-btn.active {
+      background: #dd6031;
+      color: #ffffff;
+    }
+
+    .difficulty-btn.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .difficulty-btn.locked:hover {
+      background: #ffffff;
+      transform: none;
+    }
+
+    .difficulty-btn.unlocked {
+      border-color: #228B22;
+    }
+
+    .lock-icon {
+      font-size: 1.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .progress-container {
+      margin-bottom: 2rem;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(49, 30, 16, 0.1);
+    }
+
+    .progress-label {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .logo-progress {
+      position: relative;
+      width: 100%;
+      height: 80px;
+      border: 3px solid #dd6031;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #faf8f3;
+    }
+
+    .logo-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #dd6031, #ffea94);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    .logo-text {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #311e10;
+      z-index: 2;
+      mix-blend-mode: multiply;
+    }
+
+    .quiz-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(49, 30, 16, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .question-number {
+      font-size: 0.9rem;
+      color: #dd6031;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #311e10;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .answer-btn {
+      padding: 1.2rem;
+      border: 2px solid #dd6031;
+      background: #faf8f3;
+      color: #311e10;
+      font-size: 1.1rem;
+      text-align: left;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      background: #ffea94;
+      transform: translateX(8px);
+    }
+
+    .answer-btn.correct {
+      background: #90EE90;
+      border-color: #228B22;
+    }
+
+    .answer-btn.incorrect {
+      background: #FFB6C1;
+      border-color: #DC143C;
+    }
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .next-btn {
+      width: 100%;
+      padding: 1.2rem;
+      background: #dd6031;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .next-btn:hover {
+      background: #c55028;
+      transform: translateY(-2px);
+    }
+
+    #completion-screen-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 2rem 0;
+    }
+
+    .completion-screen {
+      text-align: center;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 3rem;
+      box-shadow: 0 4px 12px rgba(49, 30, 16, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .badge {
+      font-size: 6rem;
+      margin: 1rem auto;
+      display: block;
+      text-align: center;
+    }
+
+    .badge-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #dd6031;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .score-text {
+      font-size: 1.5rem;
+      color: #311e10;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .restart-btn {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .celebration-emoji {
+      position: fixed;
+      font-size: 3rem;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .restart-btn, .share-btn {
+      padding: 1.2rem 2.5rem;
+      background: #dd6031;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+    }
+
+    .restart-btn:hover, .share-btn:hover {
+      background: #c55028;
+      transform: translateY(-2px);
+    }
+
+    .share-btn {
+      background: #ffea94;
+      color: #311e10;
+      border: 2px solid #dd6031;
+    }
+
+    .share-btn:hover {
+      background: #ffd966;
+    }
+
+    .overall-score {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #dd6031;
+      margin: 1rem 0;
+    }
+
+    .back-arrow-btn {
+      background: transparent;
+      color: #dd6031;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 0;
+      display: inline-block;
+    }
+
+    .back-arrow-btn:hover {
+      color: #c55028;
+      transform: translateX(-5px);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .title {
+        font-size: 2rem;
+      }
+
+      .difficulty-selector {
+        flex-direction: column;
+      }
+
+      .difficulty-btn {
+        width: 100%;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <div class="title" id="quiz-title">
+     Rättvisa Malmö Quiz
+    </div>
+    <div class="subtitle" id="welcome-message">
+     Testa din kunskap om vår kampanj!
+    </div>
+   </div>
+   <div id="difficulty-screen">
+    <div class="difficulty-selector"><button class="difficulty-btn" data-difficulty="easy" id="easy-btn"> <span id="easy-label-text">Justice Rookie</span> <span class="difficulty-level">(Easy)</span> </button> <button class="difficulty-btn" data-difficulty="medium" id="medium-btn"> <span id="medium-label-text">Justice Sidekick</span> <span class="difficulty-level">(Medium)</span> </button> <button class="difficulty-btn" data-difficulty="hard" id="hard-btn"> <span id="hard-label-text">Justice Hero</span> <span class="difficulty-level">(Hard)</span> </button>
+    </div>
+   </div>
+   <div id="quiz-screen" style="display: none;"><button class="back-arrow-btn" id="back-arrow-btn" onclick="location.reload()">← Tillbaka</button>
+    <div class="progress-container">
+     <div class="progress-label">
+      Framsteg: <span id="progress-text">0/0</span>
+     </div>
+     <div class="logo-progress">
+      <div class="logo-fill" id="logo-fill"></div>
+      <div class="logo-text">
+       ⚖️ RÄTTVISA
+      </div>
+     </div>
+    </div>
+    <div class="quiz-card">
+     <div class="question-number" id="question-number">
+      Fråga 1
+     </div>
+     <div class="question-text" id="question-text"></div>
+     <div class="answers" id="answers"></div><button class="next-btn" id="next-btn" style="display: none;">Nästa fråga</button>
+    </div>
+   </div>
+   <div id="completion-screen-wrapper" style="display: none;">
+    <div id="completion-screen"></div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      quiz_title: "Rättvisa Malmö Quiz",
+      welcome_message: "Testa din kunskap om vår kampanj!",
+      easy_label: "Justice Rookie",
+      medium_label: "Justice Sidekick",
+      hard_label: "Justice Hero",
+      completion_message: "Grattis! Du har klarat quizet!",
+      background_color: "#faf8f3",
+      primary_color: "#dd6031",
+      accent_color: "#ffea94",
+      text_color: "#311e10",
+      surface_color: "#ffffff",
+      font_family: "Segoe UI",
+      font_size: 16
+    };
+
+    // Embedded questions - all questions organized by difficulty
+    const allQuestions = [
+      // EASY QUESTIONS
+      {
+        question: "Which of the following companies that Malmöstad has a contract with are involved in grave human rights violations?",
+        answer_a: "WSP",
+        answer_b: "DNB",
+        answer_c: "Atea",
+        answer_d: "All of the above",
+        correct_answer: "d",
+        difficulty: "easy"
+      },
+      {
+        question: "How much does Malmö spend on procurement every year?",
+        answer_a: "500 Million SEK",
+        answer_b: "2,5 Billion SEK",
+        answer_c: "11 Billion SEK",
+        answer_d: "13 Billion SEK",
+        correct_answer: "c",
+        difficulty: "easy"
+      },
+      {
+        question: "What is our campaign's slogan?",
+        answer_a: "Vi köper det inte",
+        answer_b: "Vi köper det",
+        answer_c: "Vi frågar inte, vi köper bara",
+        answer_d: "Malmö först, rättvisa sen",
+        correct_answer: "a",
+        difficulty: "easy"
+      },
+      {
+        question: "Which of these companies helped build a railway line in the illegal settlements?",
+        answer_a: "SJ",
+        answer_b: "WSP",
+        answer_c: "Skånetrafiken",
+        answer_d: "DSP",
+        correct_answer: "b",
+        difficulty: "easy"
+      },
+      {
+        question: "How many people support the Rättvisa Malmö initiative?",
+        answer_a: "~200",
+        answer_b: "More than 1,384",
+        answer_c: "790",
+        answer_d: "Less than 1,100",
+        correct_answer: "b",
+        difficulty: "easy"
+      },
+      {
+        question: "Which of these organizations endorse the campaign?",
+        answer_a: "Malmö Antirasistiska Förening",
+        answer_b: "Fridays For Future Malmö",
+        answer_c: "Palestinagruppen Malmö",
+        answer_d: "All of the above",
+        correct_answer: "d",
+        difficulty: "easy"
+      },
+      {
+        question: "What is the main goal of the Rättvisa Malmö campaign?",
+        answer_a: "Introduce an Ethical Procurement Policy",
+        answer_b: "Lower Malmö's taxes",
+        answer_c: "Increase public spending on tech companies",
+        answer_d: "Promote tourism in Malmö",
+        correct_answer: "a",
+        difficulty: "easy"
+      },
+      {
+        question: "Who runs Rättvisa Malmö?",
+        answer_a: "Political parties",
+        answer_b: "Malmö municipality",
+        answer_c: "Malmö residents",
+        answer_d: "International NGOs",
+        correct_answer: "c",
+        difficulty: "easy"
+      },
+      {
+        question: "What does the campaign want to stop public money from supporting?",
+        answer_a: "Luxury hotels",
+        answer_b: "Human rights abuses",
+        answer_c: "Fashion brands",
+        answer_d: "Restaurants",
+        correct_answer: "b",
+        difficulty: "easy"
+      },
+      {
+        question: "Which of these corporations supports expansion of coal, oil and gas extraction?",
+        answer_a: "DNB",
+        answer_b: "HP",
+        answer_c: "Volvo",
+        answer_d: "IKEA",
+        correct_answer: "a",
+        difficulty: "easy"
+      },
+      // MEDIUM QUESTIONS
+      {
+        question: "Why does the campaign argue an Ethical Procurement Policy is necessary?",
+        answer_a: "Current rules allow deals with unethical companies",
+        answer_b: "It reduces taxes",
+        answer_c: "It increases tourist income",
+        answer_d: "It boosts Malmö's population",
+        correct_answer: "a",
+        difficulty: "medium"
+      },
+      {
+        question: "What value does the campaign emphasise as central to Malmö's role in society?",
+        answer_a: "Economic competition",
+        answer_b: "Technological advancement",
+        answer_c: "Justice and accountability",
+        answer_d: "Sports and culture",
+        correct_answer: "c",
+        difficulty: "medium"
+      },
+      {
+        question: "What type of violations are specifically mentioned in the campaign's materials?",
+        answer_a: "Patent violations",
+        answer_b: "Parking violations",
+        answer_c: "Human rights abuses and war crimes",
+        answer_d: "Fishing regulation violations",
+        correct_answer: "c",
+        difficulty: "medium"
+      },
+      {
+        question: "What does the campaign want Malmö to take a stand against?",
+        answer_a: "Increased advertising",
+        answer_b: "Exploitation and injustice",
+        answer_c: "Higher school fees",
+        answer_d: "Traffic congestion",
+        correct_answer: "b",
+        difficulty: "medium"
+      },
+      {
+        question: "What does the campaign ask Malmö residents to do?",
+        answer_a: "Boycott public transport",
+        answer_b: "Vote for the initiative demanding ethical procurement",
+        answer_c: "Vote in national elections",
+        answer_d: "Donate money to the municipality",
+        correct_answer: "b",
+        difficulty: "medium"
+      },
+      {
+        question: "When did Rättvisa Malmö launch?",
+        answer_a: "June, 2025",
+        answer_b: "May, 2025",
+        answer_c: "September, 2025",
+        answer_d: "July, 2025",
+        correct_answer: "d",
+        difficulty: "medium"
+      },
+      // HARD QUESTIONS
+      {
+        question: "Which of these is a consequence of buying from gravely unethical companies?",
+        answer_a: "Supporting exploitation and abuses",
+        answer_b: "Lower internet speed",
+        answer_c: "Increased tourism",
+        answer_d: "More shopping malls",
+        correct_answer: "a",
+        difficulty: "hard"
+      },
+      {
+        question: "What flaw in Malmö's current procurement system does the campaign highlight?",
+        answer_a: "Budgets are approved too slowly",
+        answer_b: "Contracts are too transparent",
+        answer_c: "Existing guidelines are insufficient",
+        answer_d: "Too many local companies are favoured",
+        correct_answer: "c",
+        difficulty: "hard"
+      },
+      {
+        question: "What does the campaign want Malmö to stop supporting through its public spending?",
+        answer_a: "Companies that lack innovation",
+        answer_b: "Companies tied to grave human rights violations",
+        answer_c: "Companies with low credit scores",
+        answer_d: "Companies that operate outside Sweden",
+        correct_answer: "b",
+        difficulty: "hard"
+      },
+      {
+        question: "The proposed Ethical Procurement Policy would ensure that Malmö only buys from companies that����",
+        answer_a: "Have at least 1,000 employees",
+        answer_b: "Follow international human rights standards",
+        answer_c: "Are based in the EU",
+        answer_d: "Offer the lowest price",
+        correct_answer: "b",
+        difficulty: "hard"
+      },
+      {
+        question: "Which sector does the campaign focus on reforming?",
+        answer_a: "Public procurement",
+        answer_b: "Public transportation",
+        answer_c: "Waste management",
+        answer_d: "Housing development",
+        correct_answer: "a",
+        difficulty: "hard"
+      },
+      {
+        question: "Why is Malmö's procurement policy considered impactful by the campaign?",
+        answer_a: "Malmö is Sweden's largest exporter",
+        answer_b: "The city's large procurement budget influences global supply chains",
+        answer_c: "Malmö has no private sector alternatives",
+        answer_d: "Procurement determines the city's zoning laws",
+        correct_answer: "b",
+        difficulty: "hard"
+      },
+      {
+        question: "Why are companies like WSP mentioned in the campaign?",
+        answer_a: "Their products are too expensive",
+        answer_b: "They don't offer warranty services",
+        answer_c: "They do not operate in Europe",
+        answer_d: "They have been linked to serious human rights violations",
+        correct_answer: "d",
+        difficulty: "hard"
+      },
+      {
+        question: "Which principle underlies the call for ethical procurement?",
+        answer_a: "Public money should reflect public values",
+        answer_b: "Cheaper products are always better",
+        answer_c: "Procurement is purely a technical process",
+        answer_d: "Only local companies should win contracts",
+        correct_answer: "a",
+        difficulty: "hard"
+      },
+      {
+        question: "What organization was the first to endorse the campaign?",
+        answer_a: "Malmö Antirasistiska Förening",
+        answer_b: "Palestinagruppen Malmö",
+        answer_c: "Ta Tillbaka Framtiden",
+        answer_d: "Fridays for Future",
+        correct_answer: "a",
+        difficulty: "hard"
+      }
+    ];
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let selectedDifficulty = '';
+    
+    // Load unlock status from localStorage
+    let unlockedDifficulties = JSON.parse(localStorage.getItem('unlockedDifficulties') || '["easy"]');
+    
+    // Load overall scores from localStorage
+    let overallScores = JSON.parse(localStorage.getItem('overallScores') || '{"easy": 0, "medium": 0, "hard": 0}');
+
+    // Background floating emojis
+    function createBackgroundEmojis() {
+      const emojis = ['⚖️', '🔍'];
+      const container = document.body;
+      
+      for (let i = 0; i < 12; i++) {
+        const emoji = document.createElement('div');
+        emoji.className = 'background-emoji';
+        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        emoji.style.left = Math.random() * 100 + '%';
+        emoji.style.top = Math.random() * 100 + '%';
+        
+        const duration = 15 + Math.random() * 10;
+        const delay = Math.random() * 5;
+        
+        emoji.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+        container.appendChild(emoji);
+      }
+    }
+
+    // Add floating animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(20px, -30px) rotate(5deg); }
+        50% { transform: translate(-15px, -60px) rotate(-5deg); }
+        75% { transform: translate(25px, -30px) rotate(3deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    createBackgroundEmojis();
+
+    // Update difficulty buttons based on unlock status
+    function updateDifficultyButtons() {
+      document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        const difficulty = btn.dataset.difficulty;
+        
+        if (unlockedDifficulties.includes(difficulty)) {
+          btn.classList.remove('locked');
+          btn.classList.add('unlocked');
+          btn.disabled = false;
+          
+          // Remove lock icon if exists
+          const lockIcon = btn.querySelector('.lock-icon');
+          if (lockIcon) lockIcon.remove();
+        } else {
+          btn.classList.add('locked');
+          btn.classList.remove('unlocked');
+          btn.disabled = true;
+          
+          // Add lock icon if not exists
+          if (!btn.querySelector('.lock-icon')) {
+            const lockIcon = document.createElement('div');
+            lockIcon.className = 'lock-icon';
+            lockIcon.textContent = '🔒';
+            btn.appendChild(lockIcon);
+          }
+        }
+      });
+    }
+
+    // Difficulty selection
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!btn.disabled) {
+          selectedDifficulty = btn.dataset.difficulty;
+          startQuiz();
+        }
+      });
+    });
+    
+    // Initialize button states
+    updateDifficultyButtons();
+
+    function startQuiz() {
+      let filteredQuestions = allQuestions.filter(q => q.difficulty === selectedDifficulty);
+      
+      // If more than 5 questions, randomly select 5
+      if (filteredQuestions.length > 5) {
+        const shuffled = [...filteredQuestions].sort(() => Math.random() - 0.5);
+        currentQuestions = shuffled.slice(0, 5);
+      } else {
+        currentQuestions = filteredQuestions;
+      }
+      
+      currentQuestionIndex = 0;
+      correctAnswers = 0;
+      
+      document.getElementById('difficulty-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+      
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const question = currentQuestions[currentQuestionIndex];
+      const isLastQuestion = currentQuestionIndex === currentQuestions.length - 1;
+      
+      document.getElementById('question-number').textContent = `Fråga ${currentQuestionIndex + 1} av ${currentQuestions.length}`;
+      document.getElementById('question-text').textContent = question.question;
+      document.getElementById('progress-text').textContent = `${currentQuestionIndex}/${currentQuestions.length}`;
+      
+      const progress = (currentQuestionIndex / currentQuestions.length) * 100;
+      document.getElementById('logo-fill').style.width = progress + '%';
+      
+      const answersContainer = document.getElementById('answers');
+      answersContainer.innerHTML = '';
+      
+      const answers = [
+        { text: question.answer_a, value: 'a' },
+        { text: question.answer_b, value: 'b' },
+        { text: question.answer_c, value: 'c' },
+        { text: question.answer_d, value: 'd' }
+      ];
+      
+      answers.forEach(answer => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = answer.text;
+        btn.onclick = () => selectAnswer(answer.value, btn);
+        answersContainer.appendChild(btn);
+      });
+      
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = isLastQuestion ? 'Avsluta' : 'Nästa fråga';
+      nextBtn.style.display = 'none';
+    }
+
+    function selectAnswer(selected, btn) {
+      const question = currentQuestions[currentQuestionIndex];
+      const allButtons = document.querySelectorAll('.answer-btn');
+      
+      allButtons.forEach(b => b.disabled = true);
+      
+      if (selected === question.correct_answer) {
+        btn.classList.add('correct');
+        correctAnswers++;
+      } else {
+        btn.classList.add('incorrect');
+        allButtons.forEach(b => {
+          if (b.textContent === question[`answer_${question.correct_answer}`]) {
+            b.classList.add('correct');
+          }
+        });
+      }
+      
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      currentQuestionIndex++;
+      
+      if (currentQuestionIndex < currentQuestions.length) {
+        showQuestion();
+      } else {
+        showCompletion();
+      }
+    });
+
+    function showCompletion() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('logo-fill').style.width = '100%';
+      
+      const completionScreenWrapper = document.getElementById('completion-screen-wrapper');
+      completionScreenWrapper.style.display = 'flex';
+      
+      const completionScreen = document.getElementById('completion-screen');
+      
+      const percentage = Math.round((correctAnswers / currentQuestions.length) * 100);
+      const passed = percentage >= 75;
+      
+      let badgeEmoji, badgeTitle, resultMessage;
+      
+      if (passed) {
+        // Save score for this difficulty
+        overallScores[selectedDifficulty] = correctAnswers;
+        localStorage.setItem('overallScores', JSON.stringify(overallScores));
+        
+        // Unlock next difficulty
+        if (selectedDifficulty === 'easy' && !unlockedDifficulties.includes('medium')) {
+          unlockedDifficulties.push('medium');
+          localStorage.setItem('unlockedDifficulties', JSON.stringify(unlockedDifficulties));
+        } else if (selectedDifficulty === 'medium' && !unlockedDifficulties.includes('hard')) {
+          unlockedDifficulties.push('hard');
+          localStorage.setItem('unlockedDifficulties', JSON.stringify(unlockedDifficulties));
+        }
+        
+        if (selectedDifficulty === 'easy') {
+          badgeEmoji = '⚖️';
+          badgeTitle = window.elementSdk?.config?.easy_label || defaultConfig.easy_label;
+        } else if (selectedDifficulty === 'medium') {
+          badgeEmoji = '🕊️';
+          badgeTitle = window.elementSdk?.config?.medium_label || defaultConfig.medium_label;
+        } else {
+          badgeEmoji = '⭐';
+          badgeTitle = window.elementSdk?.config?.hard_label || defaultConfig.hard_label;
+        }
+        
+        let titleMessage;
+        if (selectedDifficulty === 'easy') {
+          titleMessage = `You are now a ${badgeTitle}!`;
+        } else if (selectedDifficulty === 'medium') {
+          titleMessage = `You've advanced to become a ${badgeTitle}!`;
+        } else {
+          titleMessage = `You've reached the ultimate level: ${badgeTitle}!`;
+        }
+        
+        resultMessage = `${titleMessage}<br><br>Du fick ${correctAnswers} av ${currentQuestions.length} rätt (${percentage}%)`;
+        
+        if (selectedDifficulty === 'easy' && unlockedDifficulties.includes('medium') && unlockedDifficulties.length === 2) {
+          resultMessage += '<br><br>🎉 Du har låst upp Medium svårighetsgrad!';
+        } else if (selectedDifficulty === 'medium' && unlockedDifficulties.includes('hard') && unlockedDifficulties.length === 3) {
+          resultMessage += '<br><br>�� Du har låst upp Hard svårighetsgrad!';
+        }
+        
+        createCelebrationEmojis();
+      } else {
+        badgeEmoji = '😔';
+        badgeTitle = 'Försök igen!';
+        resultMessage = `Du fick ${correctAnswers} av ${currentQuestions.length} rätt (${percentage}%)<br><br>Du behöver minst 75% för att klara nivån.`;
+      }
+      
+      const totalScore = overallScores.easy + overallScores.medium + overallScores.hard;
+      const maxPossibleScore = 15; // 5 questions per difficulty level
+      
+      completionScreen.innerHTML = `
+        <div class="badge">${badgeEmoji}</div>
+        <div class="badge-title">${badgeTitle}</div>
+        <div class="score-text">${resultMessage}</div>
+        <div class="overall-score">Total Score: ${totalScore}/${maxPossibleScore}</div>
+        <button class="share-btn" onclick="shareScore()">📤 Share Score</button>
+        <button class="restart-btn" onclick="location.reload()">Tillbaka till start</button>
+      `;
+    }
+
+    function createCelebrationEmojis() {
+      const emojis = ['🧡', '💚'];
+      
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          const emoji = document.createElement('div');
+          emoji.className = 'celebration-emoji';
+          emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          emoji.style.left = Math.random() * 100 + '%';
+          emoji.style.bottom = '-50px';
+          document.body.appendChild(emoji);
+          
+          const duration = 3 + Math.random() * 2;
+          const drift = (Math.random() - 0.5) * 200;
+          
+          emoji.animate([
+            { transform: 'translateY(0) translateX(0) rotate(0deg)', opacity: 1 },
+            { transform: `translateY(-${window.innerHeight + 100}px) translateX(${drift}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+          ], {
+            duration: duration * 1000,
+            easing: 'ease-out'
+          });
+          
+          setTimeout(() => emoji.remove(), duration * 1000);
+        }, i * 100);
+      }
+    }
+
+    async function shareScore() {
+      const totalScore = overallScores.easy + overallScores.medium + overallScores.hard;
+      const maxPossibleScore = 15;
+
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#faf8f3';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Title
+      ctx.fillStyle = '#dd6031';
+      ctx.font = 'bold 80px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Rättvisa Malmö Quiz', canvas.width / 2, 200);
+
+      // Emoji
+      ctx.font = '200px Arial';
+      ctx.fillText('⚖️', canvas.width / 2, 450);
+
+      // Total score
+      ctx.fillStyle = '#311e10';
+      ctx.font = 'bold 100px Arial';
+      ctx.fillText(`${totalScore}/${maxPossibleScore}`, canvas.width / 2, 650);
+
+      ctx.font = '50px Arial';
+      ctx.fillText('Total Score', canvas.width / 2, 730);
+
+      // Individual scores
+      ctx.font = '45px Arial';
+      const yStart = 900;
+      ctx.fillText(`Easy: ${overallScores.easy}/5`, canvas.width / 2, yStart);
+      ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
+      ctx.fillText(`Hard: ${overallScores.hard}/5`, canvas.width / 2, yStart + 200);
+
+      // CTA
+      ctx.fillStyle = '#dd6031';
+      ctx.font = 'bold 55px Arial';
+      ctx.fillText('Vi köper det inte!', canvas.width / 2, 1400);
+
+      ctx.fillStyle = '#311e10';
+      ctx.font = '40px Arial';
+      ctx.fillText('Test your knowledge at', canvas.width / 2, 1500);
+      ctx.fillText('Rättvisa Malmö Quiz', canvas.width / 2, 1570);
+
+      const shareText = `🎯 I scored ${totalScore}/${maxPossibleScore} on the Rättvisa Malmö Quiz!\n\n⚖️ Vi köper det inte!`;
+
+      // Convert to blob
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'rattvisa-malmo-score.png', { type: 'image/png' });
+
+      // 💡 FIXED: Try share() WITHOUT canShare()
+      try {
+        await navigator.share({
+          title: 'Rättvisa Malmö Quiz Score',
+          text: shareText,
+          files: [file]
+        });
+
+        showSuccess("Shared successfully!");
+        return;
+      } catch (err) {
+        // If user cancels share — do nothing
+        if (err.name === "AbortError") return;
+      }
+
+      // 💡 FALLBACK: download using blob URL (MUCH more reliable)
+      const url = URL.createObjectURL(blob);
+      showShareOptions(shareText, url);
+    }
+
+    
+    function showShareOptions(shareText, imageDataUrl) {
+      const completionScreen = document.getElementById('completion-screen');
+      
+      // Remove existing share menu if any
+      const existingMenu = document.getElementById('share-menu');
+      if (existingMenu) existingMenu.remove();
+      
+      const shareMenu = document.createElement('div');
+      shareMenu.id = 'share-menu';
+      shareMenu.style.cssText = 'background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1rem; border: 2px solid #dd6031;';
+      
+      shareMenu.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 1rem; text-align: center; color: #dd6031;">Share Your Score Image</div>
+        <div style="margin-bottom: 1rem;">
+          <img src="${imageDataUrl}" style="width: 100%; max-width: 300px; display: block; margin: 0 auto; border: 2px solid #dd6031; border-radius: 8px;" alt="Score card">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button onclick="downloadImage('${imageDataUrl}')" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; background: #dd6031; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
+            <span style="font-size: 1.5rem;">💾</span> Download Image
+          </button>
+          <div style="font-size: 0.9rem; text-align: center; color: #666; margin-top: 0.5rem;">
+            Download the image and share it on Instagram, Facebook, or any social media!
+          </div>
+        </div>
+      `;
+      
+      completionScreen.appendChild(shareMenu);
+    }
+    
+    function downloadImage(url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'rattvisa-malmo-quiz-score.png';
+      link.click();
+
+      showSuccess("Image downloaded! Check your downloads folder!");
+    }
+    
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const completionScreen = document.getElementById('completion-screen');
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = 'background: #90EE90; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 1.1rem;';
+        successMsg.textContent = '✅ Copied to clipboard! Paste it anywhere to share!';
+        completionScreen.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+      }).catch(() => {
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'background: #FFB6C1; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 1.1rem;';
+        errorMsg.textContent = '❌ Failed to copy. Please try again.';
+        document.getElementById('completion-screen').appendChild(errorMsg);
+        setTimeout(() => errorMsg.remove(), 3000);
+      });
+    }
+
+    // Element SDK implementation
+    async function onConfigChange(config) {
+      const quizTitle = config.quiz_title || defaultConfig.quiz_title;
+      const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+      const easyLabel = config.easy_label || defaultConfig.easy_label;
+      const mediumLabel = config.medium_label || defaultConfig.medium_label;
+      const hardLabel = config.hard_label || defaultConfig.hard_label;
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const accentColor = config.accent_color || defaultConfig.accent_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+
+      document.getElementById('quiz-title').textContent = quizTitle;
+      document.getElementById('welcome-message').textContent = welcomeMessage;
+      document.getElementById('easy-label-text').textContent = easyLabel;
+      document.getElementById('medium-label-text').textContent = mediumLabel;
+      document.getElementById('hard-label-text').textContent = hardLabel;
+
+      document.body.style.background = backgroundColor;
+      document.body.style.color = textColor;
+      document.body.style.fontFamily = `${fontFamily}, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`;
+      document.body.style.fontSize = `${fontSize}px`;
+
+      const titles = document.querySelectorAll('.title');
+      titles.forEach(el => {
+        el.style.color = primaryColor;
+        el.style.fontSize = `${fontSize * 2.5}px`;
+      });
+
+      const subtitles = document.querySelectorAll('.subtitle');
+      subtitles.forEach(el => {
+        el.style.color = textColor;
+        el.style.fontSize = `${fontSize * 1.1}px`;
+      });
+
+      const cards = document.querySelectorAll('.quiz-card, .progress-container, .completion-screen');
+      cards.forEach(el => el.style.background = surfaceColor);
+
+      const buttons = document.querySelectorAll('.difficulty-btn, .next-btn, .restart-btn');
+      buttons.forEach(el => {
+        el.style.borderColor = primaryColor;
+        el.style.fontSize = `${fontSize * 1.1}px`;
+      });
+
+      const activeButtons = document.querySelectorAll('.difficulty-btn.active, .next-btn, .restart-btn');
+      activeButtons.forEach(el => {
+        el.style.background = primaryColor;
+        el.style.color = surfaceColor;
+      });
+
+      const backArrowBtn = document.querySelector('.back-arrow-btn');
+      if (backArrowBtn) {
+        backArrowBtn.style.color = primaryColor;
+        backArrowBtn.style.fontSize = `${fontSize * 1.2}px`;
+      }
+
+      const answerButtons = document.querySelectorAll('.answer-btn');
+      answerButtons.forEach(el => {
+        el.style.borderColor = primaryColor;
+        el.style.background = backgroundColor;
+        el.style.fontSize = `${fontSize * 1.1}px`;
+      });
+
+      const logoProgress = document.querySelector('.logo-progress');
+      if (logoProgress) logoProgress.style.borderColor = primaryColor;
+
+      const logoFill = document.querySelector('.logo-fill');
+      if (logoFill) logoFill.style.background = `linear-gradient(90deg, ${primaryColor}, ${accentColor})`;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => {
+                config.primary_color = value;
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            },
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (value) => {
+                config.accent_color = value;
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+          ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+          ["easy_label", config.easy_label || defaultConfig.easy_label],
+          ["medium_label", config.medium_label || defaultConfig.medium_label],
+          ["hard_label", config.hard_label || defaultConfig.hard_label],
+          ["completion_message", config.completion_message || defaultConfig.completion_message]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a086b78a24513b8',t:'MTc2MzQ3ODg5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
