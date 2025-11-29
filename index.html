@@ -210,7 +210,7 @@
       {title:'Skapa en teckning', text:'Gör en handgjord teckning som stödjer vår kampanj och dela den, glöm inte att tagga oss @rattvisamalmo!', action:{type:'ugc'}},
       {title:'Social undersökning', text:'Skapa en omröstning på sociala medier och fråga vem i ditt nätverk som har hört talas om Rättvisa Malmö. Dela resultaten och tagga kampanjen @rattvisamalmo!', action:{type:'poll'}},
       {title:'Lämna ett vykort', text:'Lämna ett kampanjvykort på ditt lokala bibliotek, café eller gym.', action:{type:'offline'}},
-      {title:'Dela quiz-resultat', text:'Avsluta vårt quiz och dela dina resultat! Tagga en vän och utmana dem att göra samma sak! [Länk till quiz]', action:{type:'quiz', url:'https://malmo.flexite.com/quiz'}}
+      {title:'Dela quiz-resultat', text:'Avsluta vårt quiz och dela dina resultat! Tagga en vän och utmana dem att göra samma sak!', action:{type:'quiz', url:'https://rattvisamalmo.github.io/advent-calendar/quiz.html'}}
     ];
 
 
@@ -326,7 +326,7 @@
 
     actionButton.addEventListener('click', ()=>{
       const day = Number(modalOverlay.dataset.current);
-      const item = calendarData.find(d=>d.day===day);
+      const item = calendarData[day-1];
       if(!item) return;
 
       switch(item.action.type){
@@ -348,9 +348,7 @@
           navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
           break;
         case 'quiz':
-          // simple inline quiz placeholder
-          const ans = confirm('Vill du starta ett kort quiz om etisk upphandling? (OK = start)');
-          if(ans) window.open('#','_blank');
+          window.open(item.action.url,'_blank');
           break;
         case 'download':
           if(item.action.url) window.open(item.action.url,'_blank');
