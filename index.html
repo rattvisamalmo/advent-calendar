@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rättvisa Malmö — Advent Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=MuseoModerno:wght@300;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#faf8f3;
+      --accent:#dd6031;
+      --accent-2:#ffea94;
+      --dark:#311e10;
+      --white:#ffffff;
+      --card-radius:14px;
+      --shadow:0 20px 60px rgba(17,12,9,0.12);
+      font-family:'Poppins', sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg) 0%, var(--accent-2) 100%);font-family:'Poppins',sans-serif;}
+    .container{width:100%;max-width:1400px;margin:0 auto;padding:40px 20px;}
+
+    .header{text-align:center;margin-bottom:40px}
+
+    .header h1{
+      font-family:'MuseoModerno';
+      font-size:3em;
+      margin:0 0 10px;
+    }
+
+    .header h1 .rattvisa {
+      font-family: 'MuseoModerno';
+      font-weight: 900;
+      color: #dd6031;
+    }
+
+    .header h1 .malmo {
+      font-family: 'MuseoModerno';
+      font-weight: 300;
+      color: #311e10;
+    }
+
+    .header p{font-size:1.1rem;color:#311e10;margin:0;font-style:italic}
+
+    .calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:20px;
+      margin-bottom:30px
+    }
+
+    @media(max-width:1024px){.calendar-grid{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:768px){
+      .calendar-grid{grid-template-columns:repeat(3,1fr);gap:12px}
+    }
+    @media(max-width:420px){.calendar-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+    .door-container{perspective:1000px;aspect-ratio:1/1;position:relative}
+    .door{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);cursor:pointer;border-radius:12px}
+    .door.flipped .door-inner{transform:rotateY(180deg)}
+    .door.locked{cursor:not-allowed}
+    .door.shake{animation:shake 0.4s}
+
+    @keyframes shake{
+      0%{transform:translateX(0)}
+      25%{transform:translateX(-6px)}
+      50%{transform:translateX(6px)}
+      75%{transform:translateX(-6px)}
+      100%{transform:translateX(0)}
+    }
+
+
+    .tooltip{
+      position:fixed;
+      left:50%;
+      transform: translateX(-50%);
+      background:var(--dark);
+      color:white;
+      padding:8px 10px;
+      font-size:0.8rem;
+      border-radius:6px;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s;
+      white-space:nowrap;
+      z-index: 9999;
+    }
+    .tooltip.show{opacity:1}
+
+    .door-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform 0.6s cubic-bezier(0.68,-0.55,0.265,1.55)}
+    .door-front,.door-back{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(0,0,0,0.12)}
+
+    .door-front{background:linear-gradient(135deg,var(--accent) 0%, #ff8a5c 100%);border:3px solid var(--dark);}
+    .door-number{font-size:2.2rem;font-weight:700;color:var(--white);text-shadow:1px 2px 6px rgba(0,0,0,0.25)}
+    .door-sub{font-size:0.8rem;color:var(--white);opacity:0.95;margin-top:6px}
+    .door-back{background:var(--white);transform:rotateY(180deg);padding:14px;border:3px solid var(--accent-2);}
+    .door-back-content{font-size:0.9rem;color:var(--dark);text-align:center;overflow:hidden}
+
+    .today {
+      box-shadow: 0 0 30px 6px #7CFC00, 0 0 60px 12px #32CD32; /* larger pulsating green */
+      animation: pulseGlowGreen 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlowGreen {
+      0% { box-shadow: 0 0 15px 3px #7CFC00, 0 0 30px 6px #32CD32; }
+      50% { box-shadow: 0 0 30px 6px #32CD32, 0 0 60px 12px #7CFC00; }
+      100% { box-shadow: 0 0 15px 3px #7CFC00, 0 0 30px 6px #32CD32; }
+    }
+
+
+
+    .locked-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.45); /* frosted white */
+      backdrop-filter: blur(4px); /* slight blur */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* prevent clicks on overlay itself */
+    }
+
+    .locked-overlay .lock {
+      font-size: 2rem;
+      color: var(--dark);
+      opacity: 0.85;
+      pointer-events: none; /* lock icon doesn’t catch clicks */
+    }
+
+
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(49,30,16,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.active{display:flex}
+    @keyframes modalOpen {
+      from {
+        transform: scale(0.7);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .modal-overlay.active .modal-content {
+      animation: modalOpen 0.35s ease-out forwards;
+    }
+
+    .modal-content{background:var(--bg);border-radius:20px;padding:40px;max-width:780px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90%;overflow-y:auto}
+
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid var(--accent-2)}
+    .modal-day{font-size:2rem;color:var(--accent);font-weight:700}
+    .close-btn{background:var(--accent);color:var(--white);border:none;width:44px;height:44px;border-radius:50%;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+    .close-btn:hover{background:var(--dark);transform:rotate(90deg)}
+
+    .modal-text{font-size:1.05rem;color:var(--dark);line-height:1.6;margin:18px 0}
+
+    .action-button{background:var(--accent);color:var(--white);border:none;padding:16px 28px;font-size:1.05rem;border-radius:999px;cursor:pointer;transition:all .25s;width:100%;font-weight:700;box-shadow:0 8px 24px rgba(221,96,49,0.22)}
+    .action-button:hover{background:var(--dark);transform:translateY(-3px);box-shadow:0 12px 34px rgba(221,96,49,0.28)}
+
+    .toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);background:var(--accent);color:var(--white);padding:14px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:2000}
+
+    @media(max-width:768px){.header h1{font-size:2em}.modal-content{padding:24px}.modal-day{font-size:1.6rem}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><span class="rattvisa">rättvisa</span> <span class="malmo">malmö</span></h1>
+      <p>Adventskalender — 24 dagar av handling för en etisk upphandlingspolicy</p>
+    </div>
+
+    <div class="calendar-grid" id="calendar-grid" aria-live="polite"></div>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header"><div class="modal-day" id="modal-day">Dag 1</div><button class="close-btn" id="close-btn">×</button></div>
+      <div class="modal-text" id="modal-text"></div>
+      <button class="action-button" id="action-button"></button>
+    </div>
+  </div>
+
+  <script>
+    const devMode = true; // override locking if true
+
+    const today = new Date();
+    const currentDay = devMode ? 24 : (today.getMonth()===11 ? today.getDate() : 0);
+
+    const calendarData = [
+      {title:'Dela initiativet', text:'Dela länken till medborgarinitiativet och be en vän rösta.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Skicka ett DM', text:'Skicka ett privat meddelande till en vän och be dem stödja kampanjen.', action:{type:'dm'}},
+      {title:'Dela en story', text:'Dela kampanjens bild på din Instagram Story med en föreslagen text.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Lämna en kommentar', text:'Skriv en stödjande kommentar på initiativets sida och beskriv varför detta är viktigt för Malmö.', action:{type:'link', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Maila en politiker', text:'Skicka ett kort mejl till en Malmöpolitiker och be dem stödja en etisk upphandlingspolicy.', action:{type:'mailto', to:'malmo@vansterpartiert.se', subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana er att stödja en etisk upphandlingspolicy i Malmö som förhindrar att skattemedel går till företag inblandade i grova kränkningar av mänskliga rättigheter.%0D%0A%0D%0MVänliga hälsningar,'}},
+      {title:'Dela en faktabild', text:'Dela en faktabild om hur mycket Malmö spenderar och varför etiska regler behövs.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Titta på video', text:'Titta på vår 30–60 sekunder långa förklaring och lämna en kommentar för att öka räckvidden.', action:{type:'video', url:''}},
+      {title:'Kommentera Malmöstads sida', text:'Lämna en artig kommentar på Malmö Stads officiella Instagram och be dem anta förslaget.', action:{type:'link', url:'https://www.instagram.com/malmostad/'}},
+      {title:'Affischera', text:'Ladda ner en enkel affisch och sätt upp i ditt trapphus eller anslagstavla.', action:{type:'download', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Prata med en vän', text:'Berätta om kampanjen för en vän — organisera en kort pratstund.', action:{type:'offline'}},
+      {title:'Kommentera sista inlägget', text:'Skriv en uppmuntrande kommentar på vårt sista inlägg för att öka räckvidden.', action:{type:'social_comment'}},
+      {title:'Skriv ett personligt meddelande', text:'Skicka ett personligt, vänligt mejl till en kontakt i politiken med din story.', action:{type:'mailto', to:'malmo@vansterpartiert.se', subject:'Personligt stöd för etisk upphandling', body:'Hej,%0D%0A%0D%0AJag vill kort berätta varför jag stödjer en etisk upphandlingspolicy i Malmö: [Skriv din korta anledning här].%0D%0A%0D%0MVänliga hälsningar,'}},
+      {title:'Maila parti', text:'Skicka samma korta mejl till det socialdemokratiska gruppmejlet.', action:{type:'mailto', to:'malmo@socialdemocraterna.se', subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana er att stödja en etisk upphandlingspolicy i Malmö som förhindrar att skattemedel går till företag inblandade i grova kränkningar av mänskliga rättigheter.%0D%0A%0D%0MVänliga hälsningar,'}},
+      {title:'Ring en politiker', text:'Använd dagens korta manus för att ringa en lokal politiker — 30 sekunder räcker.', action:{type:'call', script:'Hej, jag ringer för att be er stödja en etisk upphandlingspolicy i Malmö. Tack.'}},
+      {title:'Skriv ditt skäl', text:'Dela en kort mening om varför du stödjer etisk upphandling — posta den och tagga kampanjen.', action:{type:'ugc'}},
+      {title:'Skriv under & dela', text:'Skriv under petitionen eller dela den vidare till vänner.', action:{type:'link', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Skicka till partigrupper', text:'Skicka det färdiga mejlet till partigrupperna: malmo@vansterpartiert.se, malmo@socialdemocraterna.se, malmo@liberalerna.se', action:{type:'mailto-multi', to:['malmo@vansterpartiert.se','malmo@socialdemocraterna.se','malmo@liberalerna.se'], subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana ert parti att stödja en etisk upphandlingspolicy i Malmö.%0D%0A%0D%0MVänliga hälsningar,'}},
+      {title:'Dela i WhatsApp-grupp', text:'Dela detta inlägg i en av dina WhatsApp-grupper.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
+      {title:'Tagga en influencer', text:'Tagga en lokal influencer för att sprida kampanjens budskap.', action:{type:'social_tag', text:'@rattvisamalmo'}},
+      {title:'Dela vår profil', text:'Dela kampanjens profil på din story.', action:{type:'share', url:'https://www.instagram.com/rattvisamalmo/'}},
+      {title:'Skapa en teckning', text:'Gör en handgjord teckning som stödjer vår kampanj och dela den, glöm inte att tagga oss @rattvisamalmo!', action:{type:'ugc'}},
+      {title:'Social undersökning', text:'Skapa en omröstning på sociala medier och fråga vem i ditt nätverk som har hört talas om Rättvisa Malmö. Dela resultaten och tagga kampanjen @rattvisamalmo!', action:{type:'poll'}},
+      {title:'Lämna ett vykort', text:'Lämna ett kampanjvykort på ditt lokala bibliotek, café eller gym.', action:{type:'offline'}},
+      {title:'Dela quiz-resultat', text:'Avsluta vårt quiz och dela dina resultat! Tagga en vän och utmana dem att göra samma sak! [Länk till quiz]', action:{type:'quiz', url:'https://malmo.flexite.com/quiz'}}
+    ];
+
+
+    const grid = document.getElementById('calendar-grid');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalDay = document.getElementById('modal-day');
+    const modalText = document.getElementById('modal-text');
+    const actionButton = document.getElementById('action-button');
+    const closeBtn = document.getElementById('close-btn');
+
+    function buildMailto(to, subject, body){
+      const safeTo = Array.isArray(to) ? to.join(',') : (to||'');
+      const parts = [];
+      if(subject) parts.push('subject='+encodeURIComponent(subject));
+      if(body) parts.push('body='+encodeURIComponent(body));
+      return 'mailto:'+safeTo + (parts.length ? ('?'+parts.join('&')) : '');
+
+    }
+
+    function showToast(text){
+      const t = document.createElement('div');
+      t.className='toast';
+      t.textContent=text;
+      document.body.appendChild(t);
+      setTimeout(()=>{t.style.opacity='0';t.addEventListener('transitionend',()=>t.remove());},1800);
+    }
+
+    function tryShare(url){
+      if(navigator.share){
+        navigator.share({title:'Rättvisa Malmö',text:'Stöd detta initiativ',url}).catch(()=>{});
+        return true;
+      }
+      return false;
+    }
+
+    // Render calendar
+    calendarData.forEach((item, index) =>{
+      const container = document.createElement('div');
+      container.className='door-container';
+
+      const door = document.createElement('div');
+      door.className='door';
+      const inner = document.createElement('div');
+      inner.className='door-inner';
+      door.appendChild(inner);
+      door.setAttribute('data-day', (index + 1));
+
+      const front = document.createElement('div'); front.className='door-front';
+      front.innerHTML=`<div style='text-align:center'><div class='door-number'>${(index + 1)}</div><div class='door-sub'>${item.title}</div></div>`;
+      const back = document.createElement('div'); back.className='door-back';
+      back.innerHTML=`<div class='door-back-content'>${item.title}</div>`;
+
+      inner.appendChild(front); inner.appendChild(back);
+      container.appendChild(door);
+
+      const isUnlocked = (index + 1) <= currentDay && currentDay > 0;
+
+      if(!isUnlocked){
+        door.classList.add('locked');
+
+        // add frosted overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'locked-overlay';
+        overlay.innerHTML = '<span class="lock">🔒</span>';
+        door.appendChild(overlay);
+
+        const tooltip = document.createElement('div');
+        tooltip.className='tooltip';
+        tooltip.textContent='Låst - öppnas på dag '+ (index + 1);
+        document.body.appendChild(tooltip); // move tooltip to body
+
+        container.addEventListener('mouseenter',()=>{
+          const rect = container.getBoundingClientRect();
+          tooltip.style.left = rect.left + rect.width/2 + 'px';
+          tooltip.style.top = rect.bottom + 8 + 'px'; // 8px below the card
+          tooltip.classList.add('show');
+        });
+
+        container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
+        container.addEventListener('click', ()=>{ door.classList.add('shake'); tooltip.classList.add('show'); setTimeout(()=>{door.classList.remove('shake'); tooltip.classList.remove('show');},2000); });
+      } else {
+        if((index + 1) === currentDay) door.classList.add('today');
+        container.addEventListener('click', ()=>{
+          door.classList.add('flipped');
+          setTimeout(()=>{
+            modalDay.textContent='Dag '+(index + 1);
+            modalText.textContent=item.text;
+            
+            // set action button text
+            if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
+            else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
+            else if(item.action.type === 'link') actionButton.textContent = 'Öppna sidan';
+            else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
+            else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
+            else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
+            else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
+            else if(item.action.type === 'dm') actionButton.textContent = 'Skicka DM';
+            else if(item.action.type === 'video') actionButton.textContent = 'Se video';
+            else actionButton.textContent = 'Gör aktiviteten';
+
+            modalOverlay.dataset.current = (index + 1);
+            modalOverlay.classList.add('active');
+          },280);
+        });
+      }
+
+      container.tabIndex=0;
+      grid.appendChild(container);
+    });
+
+    closeBtn.addEventListener('click', ()=>{ modalOverlay.classList.remove('active'); });
+    modalOverlay.addEventListener('click',(e)=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('active'); });
+
+    actionButton.addEventListener('click', ()=>{
+      const day = Number(modalOverlay.dataset.current);
+      const item = calendarData.find(d=>d.day===day);
+      if(!item) return;
+
+      switch(item.action.type){
+        case 'mailto':
+          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
+          break;
+        case 'mailto-multi':
+          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
+          break;
+        case 'share':
+          if(!tryShare(item.action.url)){
+            navigator.clipboard.writeText(item.action.url).then(()=>{ showToast('Länken kopierad — klistra in i din app för att dela.'); window.open(item.action.url,'_blank'); });
+          }
+          break;
+        case 'link':
+          window.open(item.action.url,'_blank');
+          break;
+        case 'copy':
+          navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
+          break;
+        case 'quiz':
+          // simple inline quiz placeholder
+          const ans = confirm('Vill du starta ett kort quiz om etisk upphandling? (OK = start)');
+          if(ans) window.open('#','_blank');
+          break;
+        case 'download':
+          if(item.action.url) window.open(item.action.url,'_blank');
+          break;
+        case 'call':
+          alert(item.action.script || 'Ringt manus saknas.');
+          break;
+        case 'dm':
+          showToast('Öppna din meddelandeapp och skicka ett vänligt DM.');
+          break;
+        case 'video':
+          showToast('Öppna kampanjens video och lämna en kommentar.');
+          break;
+        case 'poll':
+          showToast('Delta i en snabb enkät (länk öppnas).');
+          break;
+        case 'social_comment':
+          showToast('Öppna sociala kanalen och lämna en kommentar.');
+          break;
+        case 'ugc':
+          showToast('Dela din korta anledning och tagga kampanjen.');
+          break;
+        case 'offline':
+          showToast('Prata med en vän — tack!');
+          break;
+        default:
+          showToast('Aktivitet utförd — tack!');
+      }
+
+    });
+  </script>
+</body>
+</html>
