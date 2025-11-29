@@ -19,6 +19,16 @@
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg) 0%, var(--accent-2) 100%);font-family:'Poppins',sans-serif;}
     .container{width:100%;max-width:1400px;margin:0 auto;padding:40px 20px;}
+    /* Snow canvas */
+    #snow-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1; /* below cards */
+    }
 
     .header{text-align:center;margin-bottom:40px}
 
@@ -98,7 +108,47 @@
 
     .today {
       box-shadow: 0 0 30px 6px #7CFC00, 0 0 60px 12px #32CD32; /* larger pulsating green */
-      animation: pulseGlowGreen 2s infinite ease-in-out;
+      animation: snow-glow-pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes snow-glow-pulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(135, 206, 250, 0.6),
+                    0 0 40px rgba(135, 206, 250, 0.4),
+                    0 0 60px rgba(135, 206, 250, 0.2);
+        filter: brightness(1);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(135, 206, 250, 0.9),
+                    0 0 60px rgba(135, 206, 250, 0.6),
+                    0 0 90px rgba(135, 206, 250, 0.3);
+        filter: brightness(1.15);
+      }
+    }
+
+    /* Santa hat for today’s door */
+    .door.today::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      left: -20px;
+      width: 50px;
+      height: 50px;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/c/c0/Santa_hat.svg') no-repeat center/contain;
+      transform: rotate(-45deg);
+      transform-origin: bottom right;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+
+
+    /* Wiggle animation for Santa hat */
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-45deg) translate(0,0); }
+      25% { transform: rotate(-50deg) translate(-2px,-2px); }
+      50% { transform: rotate(-40deg) translate(2px,2px); }
+      75% { transform: rotate(-47deg) translate(-1px,1px); }
     }
 
     @keyframes pulseGlowGreen {
@@ -145,7 +195,49 @@
       animation: modalOpen 0.35s ease-out forwards;
     }
 
-    .modal-content{background:var(--bg);border-radius:20px;padding:40px;max-width:780px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90%;overflow-y:auto}
+    
+    .modal-content {
+      background: #faf8f3;
+      border-radius: 20px;
+      padding: 50px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      animation: modalOpen 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      max-height: 90%;
+      overflow-y: auto;
+      border: 15px solid;
+      border-image: repeating-linear-gradient(
+        45deg,
+        #dc2626,
+        #dc2626 20px,
+        #ffffff 20px,
+        #ffffff 40px,
+        #16a34a 40px,
+        #16a34a 60px,
+        #ffffff 60px,
+        #ffffff 80px
+      ) 30;
+    }
+
+    .modal-content::before {
+      content: '🎄';
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      font-size: 2.5em;
+      z-index: 10;
+    }
+    
+    .modal-content::after {
+      content: '🎄';
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      font-size: 2.5em;
+      z-index: 10;
+    }
 
     .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid var(--accent-2)}
     .modal-day{font-size:2rem;color:var(--accent);font-weight:700}
@@ -160,13 +252,36 @@
     .toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);background:var(--accent);color:var(--white);padding:14px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:2000}
 
     @media(max-width:768px){.header h1{font-size:2em}.modal-content{padding:24px}.modal-day{font-size:1.6rem}}
+
+    .sparkle-particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100;
+      animation: sparkle-burst 1s ease-out forwards;
+    }
+
+    @keyframes sparkle-burst {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+      }
+    }
+
   </style>
 </head>
 <body>
+  <!-- Snow canvas -->
+  <canvas id="snow-canvas"></canvas>
+
   <div class="container">
     <div class="header">
       <h1><span class="rattvisa">rättvisa</span> <span class="malmo">malmö</span></h1>
-      <p>Adventskalender — 24 dagar av handling för en etisk upphandlingspolicy</p>
+      <p>Adventskalender — 24 dagar av handling för en bättre stad</p>
     </div>
 
     <div class="calendar-grid" id="calendar-grid" aria-live="polite"></div>
@@ -181,6 +296,65 @@
   </div>
 
   <script>
+    // ---- Diagonal Snow effect ----
+    (function(){
+      const canvas = document.getElementById('snow-canvas');
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', ()=>{
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const flakes = [];
+      const flakeCount = 8;
+      for(let i=0; i<flakeCount; i++){
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 3 + 2,
+          d: Math.random() + 1,
+          tilt: Math.random() * 2,
+          drift: Math.random() * 0.5 + 0.2 // slight horizontal drift
+        });
+      }
+
+      function draw(){
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.beginPath();
+        for(let f of flakes){
+          ctx.moveTo(f.x, f.y);
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
+        }
+        ctx.fill();
+        update();
+      }
+
+      let angle = 0;
+      function update(){
+        angle += 0.01;
+        for(let f of flakes){
+          f.y += Math.pow(f.d, 1.5) + 0.5;
+          f.x += Math.sin(angle) * f.d * 0.3 + f.drift;
+          if(f.y > height){
+            f.y = -f.r;
+            f.x = Math.random() * width;
+          }
+          if(f.x > width) f.x = 0;
+        }
+      }
+
+      function animate(){
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+    
     const devMode = true; // override locking if true
 
     const today = new Date();
@@ -294,6 +468,40 @@
       } else {
         if((index + 1) === currentDay) door.classList.add('today');
         container.addEventListener('click', ()=>{
+          // Create sparkle burst
+          const rect = container.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          // Create 15 sparkle particles
+          for (let i = 0; i < 15; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle-particle';
+            
+            // Random golden colors
+            const goldColors = ['#FFD700', '#FFA500', '#FFED4E', '#FFBF00', '#FFE55C'];
+            const color = goldColors[Math.floor(Math.random() * goldColors.length)];
+            
+            const size = Math.random() * 8 + 4;
+            const angle = (Math.PI * 2 * i) / 15 + (Math.random() - 0.5) * 0.5;
+            const distance = Math.random() * 80 + 40;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            sparkle.style.left = `${centerX}px`;
+            sparkle.style.top = `${centerY}px`;
+            sparkle.style.width = `${size}px`;
+            sparkle.style.height = `${size}px`;
+            sparkle.style.backgroundColor = color;
+            sparkle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+            sparkle.style.setProperty('--tx', `${tx}px`);
+            sparkle.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1000);
+          }
+
           door.classList.add('flipped');
           setTimeout(()=>{
             modalDay.textContent='Dag '+(index + 1);
