@@ -307,65 +307,95 @@
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+  console.log("🔵 Script started.");
+
   /* ============================================================
      LOAD CALENDAR DATA FROM GOOGLE SHEET CSV
      ============================================================ */
   const CSV_URL =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtP7_COBqNFt8qdBndqcRNuLxp6a63p1p1IARXAgYVMxHUTNKXLAikdpwTyhLcEeHidDXMNKKYNXKB/pub?output=csv";
 
+  console.log("📄 CSV URL:", CSV_URL);
+
   let calendarData = []; // Will be filled dynamically
 
-  // --- dev toggle ---
+  // dev toggle
   const devMode = true;
   const today = new Date();
   const currentDay = devMode ? 24 : (today.getMonth() === 11 ? today.getDate() : 0);
+  console.log("📅 Current day:", currentDay);
 
   /* ============================================================
      FETCH + PARSE CSV → Build calendarData[]
      ============================================================ */
   function loadCalendarData() {
-    return new Promise((resolve) => {
+    console.log("🔄 Starting CSV load...");
+
+    return new Promise((resolve, reject) => {
       Papa.parse(CSV_URL, {
         download: true,
         header: true,
+
+        beforeFirstChunk: () => console.log("📥 Fetch initiated..."),
+
         complete: (results) => {
+          console.log("✅ CSV parse complete.");
+          console.log("📊 Raw results:", results);
+
+          if (!results || !results.data) {
+            console.error("❌ No data returned from CSV!");
+            reject("No data");
+            return;
+          }
+
           const rows = results.data;
+          console.log("📄 Parsed rows:", rows);
 
           calendarData = rows
-            .filter((r) => r.day && r.title) // ignore blank rows
+            .filter((r, i) => {
+              const ok = r.day && r.title;
+              console.log(`➡️ Row ${i} valid?`, ok, r);
+              return ok;
+            })
             .map((r) => {
-              const dayNum = Number(r.day.trim());
-
-              const action = {
-                type: r.action_type || "",
-                url: r.action_url || "",
-                to: r.action_to || "",
-                subject: r.action_subject || "",
-                body: r.action_body || "",
-                script: r.action_script || "",
-                multi_to: r.action_multi_to
-                  ? r.action_multi_to.split(",").map((x) => x.trim())
-                  : [],
-              };
-
-              return {
-                day: dayNum,
+              const mapped = {
+                day: Number(r.day.trim()),
                 title: r.title || "",
                 text: r.text || "",
-                action,
+                action: {
+                  type: r.action_type || "",
+                  url: r.action_url || "",
+                  to: r.action_to || "",
+                  subject: r.action_subject || "",
+                  body: r.action_body || "",
+                  script: r.action_script || "",
+                  multi_to: r.action_multi_to
+                    ? r.action_multi_to.split(",").map((x) => x.trim())
+                    : [],
+                },
               };
+              console.log("🔧 Mapped row →", mapped);
+              return mapped;
             });
 
+          console.log("📦 Final calendarData:", calendarData);
           resolve();
+        },
+
+        error: (err) => {
+          console.error("❌ CSV parse error:", err);
+          reject(err);
         },
       });
     });
   }
 
   /* ============================================================
-     BUILD MAILTO STRING
+     MAILTO BUILDER
      ============================================================ */
   function buildMailto(to, subject, body) {
+    console.log("✉️ Building mailto link:", { to, subject, body });
+
     const safeTo = Array.isArray(to) ? to.join(",") : to || "";
     const parts = [];
     if (subject) parts.push("subject=" + encodeURIComponent(subject));
@@ -374,9 +404,10 @@
   }
 
   /* ============================================================
-     UTILITY FUNCTIONS
+     UTILITY
      ============================================================ */
   function showToast(text) {
+    console.log("🔔 Toast:", text);
     const t = document.createElement("div");
     t.className = "toast";
     t.textContent = text;
@@ -387,28 +418,31 @@
     }, 1800);
   }
 
-  function tryShare(url) {
-    if (navigator.share) {
-      navigator
-        .share({ title: "Rättvisa Malmö", text: "Stöd detta initiativ", url })
-        .catch(() => {});
-      return true;
-    }
-    return false;
-  }
-
   /* ============================================================
-     RENDER CALENDAR AFTER CSV LOAD
+     RENDER CALENDAR
      ============================================================ */
   async function renderCalendar() {
-    await loadCalendarData();
-    alert(len(calendarData));
-    
+    console.log("🚀 Rendering calendar...");
+
+    try {
+      await loadCalendarData();
+    } catch (err) {
+      console.error("❌ Failed to load calendar data:", err);
+      return;
+    }
+
+    console.log("📅 Data loaded. Count:", calendarData.length);
+
     const grid = document.getElementById("calendar-grid");
-    grid.innerHTML = ""; // clear any old content
+    console.log("🧱 Calendar grid element:", grid);
+
+    grid.innerHTML = "";
+    console.log("🧹 Cleared calendar grid.");
 
     calendarData.forEach((item, idx) => {
-      const day = item.day || idx + 1;
+      console.log(`➡️ Rendering day ${item.day}:`, item);
+
+      const day = item.day;
 
       const container = document.createElement("div");
       container.className = "door-container";
@@ -420,7 +454,6 @@
       const inner = document.createElement("div");
       inner.className = "door-inner";
 
-      // front
       const front = document.createElement("div");
       front.className = "door-front";
       front.innerHTML = `
@@ -430,7 +463,6 @@
         </div>
       `;
 
-      // back
       const back = document.createElement("div");
       back.className = "door-back";
       back.innerHTML = `<div class="door-back-content">${item.text}</div>`;
@@ -440,8 +472,10 @@
       door.appendChild(inner);
       container.appendChild(door);
 
-      // LOCKING LOGIC
+      // Locking
       const unlocked = day <= currentDay;
+      console.log(`🔒 Day ${day} unlocked?`, unlocked);
+
       if (!unlocked) {
         door.classList.add("locked");
 
@@ -451,23 +485,30 @@
         container.appendChild(lockOverlay);
       }
 
-      // TODAY highlight
+      // Today glow
       if (day === currentDay && unlocked) {
+        console.log("✨ Today’s door:", day);
         door.classList.add("today");
       }
 
-      // click handler
+      // Click
       door.addEventListener("click", () => {
+        console.log("🖱️ Door clicked:", day, item);
+
         if (!unlocked) {
+          console.log("🚫 Door locked, shaking.");
           door.classList.add("shake");
           setTimeout(() => door.classList.remove("shake"), 400);
           return;
         }
+
         openModal(item, day);
       });
 
       grid.appendChild(container);
     });
+
+    console.log("🏁 Finished rendering.");
   }
 
   /* ============================================================
@@ -480,15 +521,19 @@
   const closeBtn = document.getElementById("close-btn");
 
   function openModal(item, day) {
+    console.log("📬 Opening modal for day:", day, item);
+
     modalDay.textContent = "Dag " + day;
     modalText.innerHTML = item.text;
 
     const a = item.action;
+    console.log("🛠️ Action:", a);
 
-    // configure button
     actionButton.style.display = "block";
 
     actionButton.onclick = () => {
+      console.log("▶️ Action button clicked:", a);
+
       switch (a.type) {
         case "share":
           if (!tryShare(a.url)) {
@@ -516,14 +561,6 @@
           alert(a.script || "Ring ditt korta manus!");
           break;
 
-        case "poll":
-        case "ugc":
-        case "social_comment":
-        case "social_tag":
-        case "offline":
-          showToast("Klart!");
-          break;
-
         default:
           showToast("Genomfört!");
       }
@@ -535,14 +572,17 @@
   }
 
   closeBtn.addEventListener("click", () => {
+    console.log("❌ Modal closed.");
     modalOverlay.classList.remove("active");
   });
 
   /* ============================================================
      INIT
      ============================================================ */
+  console.log("🏁 INIT → calling renderCalendar()");
   renderCalendar();
   </script>
+
 
 </body>
 </html>
