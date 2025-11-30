@@ -648,8 +648,8 @@
 
     actionButton.style.display = "block";
 
-    modalDay.textContent='Dag '+(index + 1);
-    modalText.textContent=item.text;
+    modalDay.textContent = 'Dag '+ day;
+    modalText.textContent = item.text;
     
     // set action button text
     if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
