@@ -511,6 +511,14 @@
     }, 1800);
   }
 
+  function tryShare(url){
+    if(navigator.share){
+      navigator.share({title:'Rättvisa Malmö',text:'Stöd detta initiativ',url}).catch(()=>{});
+      return true;
+    }
+    return false;
+  }
+
   /* ============================================================
      RENDER CALENDAR
      ============================================================ */
