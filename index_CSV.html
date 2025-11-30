@@ -351,34 +351,33 @@
           const rows = results.data;
           console.log("📄 Parsed rows:", rows);
 
-          calendarData = rows
-            .filter((r, i) => {
-              const ok = r.day && r.title;
-              console.log(`➡️ Row ${i} valid?`, ok, r);
-              return ok;
-            })
-            .map((r) => {
-              const mapped = {
-                day: Number(r.day.trim()),
-                title: r.title || "",
-                text: r.text || "",
-                action: {
-                  type: r.action_type || "",
-                  url: r.action_url || "",
-                  to: r.action_to || "",
-                  subject: r.action_subject || "",
-                  body: r.action_body || "",
-                  script: r.action_script || "",
-                  multi_to: r.action_multi_to
-                    ? r.action_multi_to.split(",").map((x) => x.trim())
-                    : [],
-                },
-              };
-              console.log("🔧 Mapped row →", mapped);
-              return mapped;
-            });
+          console.log("🔧 Mapping rows to calendarData (auto day numbers)...");
+
+          calendarData = rows.map((r, i) => {
+            const mapped = {
+              day: i + 1, // Auto-assign day number
+              title: r.title || "",
+              text: r.text || "",
+              action: {
+                type: r.action_type || "",
+                url: r.action_url || "",
+                to: r.action_to || "",
+                subject: r.action_subject || "",
+                body: r.action_body || "",
+                script: r.action_script || "",
+                // multi-recipient (mailto-multi)
+                multi_to: r.action_to
+                  ? r.action_to.split(/[;,]/).map((x) => x.trim()).filter(Boolean)
+                  : [],
+              },
+            };
+
+            console.log(`➡️ Row ${i + 1} mapped:`, mapped);
+            return mapped;
+          });
 
           console.log("📦 Final calendarData:", calendarData);
+
           resolve();
         },
 
