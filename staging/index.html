@@ -692,11 +692,11 @@
           break;
 
         case 'copy':
-          navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
+          navigator.clipboard.writeText(a.body).then(()=> showToast('Länk kopierad till urklipp.'));
           break;
         
         case 'dm':
-          navigator.clipboard.writeText(item.action.text).then(()=> showToast('DM kopierad till urklipp.'));
+          navigator.clipboard.writeText(a.body).then(()=> showToast('DM kopierad till urklipp.'));
           break;
 
         case "call":
