@@ -586,12 +586,12 @@
             // set action button text
             if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
             else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
-            else if(item.action.type === 'link') actionButton.textContent = 'Öppna sidan';
+            else if(item.action.type === 'link') actionButton.textContent = 'Öppna länk';
             else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
             else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
             else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
             else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
-            else if(item.action.type === 'dm') actionButton.textContent = 'Skicka DM';
+            else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
             else if(item.action.type === 'video') actionButton.textContent = 'Se video';
             else actionButton.textContent = 'Gör aktiviteten';
 
@@ -644,6 +644,8 @@
         case "video":
         case "download":
         case "quiz":
+        case 'video':
+        case 'social_comment':
           window.open(a.url, "_blank");
           break;
 
@@ -655,12 +657,32 @@
           window.location.href = buildMailto(a.multi_to, a.subject, a.body);
           break;
 
+        case 'copy':
+          navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
+          break;
+        
+        case 'dm':
+          navigator.clipboard.writeText(item.action.text).then(()=> showToast('DM kopierad till urklipp.'));
+          break;
+
         case "call":
           alert(a.script || "Ring ditt korta manus!");
           break;
 
+        case 'poll':
+          showToast('Delta i en snabb enkät (länk öppnas).');
+          break;
+
+        case 'ugc':
+          showToast('Dela din korta anledning och tagga kampanjen.');
+          break;
+
+        case 'offline':
+          showToast('Prata med en vän — tack!');
+          break;
+          
         default:
-          showToast("Genomfört!");
+          showToast('Aktivitet utförd — tack!');
       }
     };
 
