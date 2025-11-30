@@ -282,11 +282,41 @@
       }
     }
 
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid #ccc;
+      border-top-color: #e63946;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
   </style>
 </head>
 <body>
   <!-- Snow canvas -->
   <canvas id="snow-canvas"></canvas>
+  
 
   <div class="container">
     <div class="header">
@@ -294,7 +324,12 @@
       <p>Adventskalender — 24 dagar av handling för en bättre stad</p>
     </div>
 
-    <div class="calendar-grid" id="calendar-grid" aria-live="polite"></div>
+    <div class="calendar-grid" id="calendar-grid" aria-live="polite">
+      <div id="loading-screen">
+        <div class="spinner"></div>
+          <p>Hämtar dagens luckor…</p>
+      </div>
+    </div>
   </div>
 
   <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
@@ -305,6 +340,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     // ---- Diagonal Snow effect ----
     (function(){
@@ -364,73 +400,138 @@
 
       animate();
     })();
-    
-    const devMode = true; // override locking if true
 
-    const today = new Date();
-    const currentDay = devMode ? 24 : (today.getMonth()===11 ? today.getDate() : 0);
+  console.log("🔵 Script started.");
 
-    const calendarData = [
-      {title:'Dela initiativet', text:'Dela länken till medborgarinitiativet och be en vän rösta.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Skicka ett DM', text:'Skicka ett privat meddelande till en vän och be dem stödja kampanjen.', action:{type:'dm'}},
-      {title:'Dela en story', text:'Dela kampanjens bild på din Instagram Story med en föreslagen text.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Lämna en kommentar', text:'Skriv en stödjande kommentar på initiativets sida och beskriv varför detta är viktigt för Malmö.', action:{type:'link', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Maila en politiker', text:'Skicka ett kort mejl till en Malmöpolitiker och be dem stödja en etisk upphandlingspolicy.', action:{type:'mailto', to:'malmo@vansterpartiert.se', subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana er att stödja en etisk upphandlingspolicy i Malmö som förhindrar att skattemedel går till företag inblandade i grova kränkningar av mänskliga rättigheter.%0D%0A%0D%0MVänliga hälsningar,'}},
-      {title:'Dela en faktabild', text:'Dela en faktabild om hur mycket Malmö spenderar och varför etiska regler behövs.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Titta på video', text:'Titta på vår 30–60 sekunder långa förklaring och lämna en kommentar för att öka räckvidden.', action:{type:'video', url:''}},
-      {title:'Kommentera Malmöstads sida', text:'Lämna en artig kommentar på Malmö Stads officiella Instagram och be dem anta förslaget.', action:{type:'link', url:'https://www.instagram.com/malmostad/'}},
-      {title:'Affischera', text:'Ladda ner en enkel affisch och sätt upp i ditt trapphus eller anslagstavla.', action:{type:'download', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Prata med en vän', text:'Berätta om kampanjen för en vän — organisera en kort pratstund.', action:{type:'offline'}},
-      {title:'Kommentera sista inlägget', text:'Skriv en uppmuntrande kommentar på vårt sista inlägg för att öka räckvidden.', action:{type:'social_comment'}},
-      {title:'Skriv ett personligt meddelande', text:'Skicka ett personligt, vänligt mejl till en kontakt i politiken med din story.', action:{type:'mailto', to:'malmo@vansterpartiert.se', subject:'Personligt stöd för etisk upphandling', body:'Hej,%0D%0A%0D%0AJag vill kort berätta varför jag stödjer en etisk upphandlingspolicy i Malmö: [Skriv din korta anledning här].%0D%0A%0D%0MVänliga hälsningar,'}},
-      {title:'Maila parti', text:'Skicka samma korta mejl till det socialdemokratiska gruppmejlet.', action:{type:'mailto', to:'malmo@socialdemocraterna.se', subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana er att stödja en etisk upphandlingspolicy i Malmö som förhindrar att skattemedel går till företag inblandade i grova kränkningar av mänskliga rättigheter.%0D%0A%0D%0MVänliga hälsningar,'}},
-      {title:'Ring en politiker', text:'Använd dagens korta manus för att ringa en lokal politiker — 30 sekunder räcker.', action:{type:'call', script:'Hej, jag ringer för att be er stödja en etisk upphandlingspolicy i Malmö. Tack.'}},
-      {title:'Skriv ditt skäl', text:'Dela en kort mening om varför du stödjer etisk upphandling — posta den och tagga kampanjen.', action:{type:'ugc'}},
-      {title:'Skriv under & dela', text:'Skriv under petitionen eller dela den vidare till vänner.', action:{type:'link', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Skicka till partigrupper', text:'Skicka det färdiga mejlet till partigrupperna: malmo@vansterpartiert.se, malmo@socialdemocraterna.se, malmo@liberalerna.se', action:{type:'mailto-multi', to:['malmo@vansterpartiert.se','malmo@socialdemocraterna.se','malmo@liberalerna.se'], subject:'Stöd för etisk upphandling i Malmö', body:'Hej,%0D%0A%0D%0AJag vill uppmana ert parti att stödja en etisk upphandlingspolicy i Malmö.%0D%0A%0D%0MVänliga hälsningar,'}},
-      {title:'Dela i WhatsApp-grupp', text:'Dela detta inlägg i en av dina WhatsApp-grupper.', action:{type:'share', url:'https://malmo.flexite.com/malmo_fp/listview/3GLM/detailsView/33891?lang=sv'}},
-      {title:'Tagga en influencer', text:'Tagga en lokal influencer för att sprida kampanjens budskap.', action:{type:'social_tag', text:'@rattvisamalmo'}},
-      {title:'Dela vår profil', text:'Dela kampanjens profil på din story.', action:{type:'share', url:'https://www.instagram.com/rattvisamalmo/'}},
-      {title:'Skapa en teckning', text:'Gör en handgjord teckning som stödjer vår kampanj och dela den, glöm inte att tagga oss @rattvisamalmo!', action:{type:'ugc'}},
-      {title:'Social undersökning', text:'Skapa en omröstning på sociala medier och fråga vem i ditt nätverk som har hört talas om Rättvisa Malmö. Dela resultaten och tagga kampanjen @rattvisamalmo!', action:{type:'poll'}},
-      {title:'Lämna ett vykort', text:'Lämna ett kampanjvykort på ditt lokala bibliotek, café eller gym.', action:{type:'offline'}},
-      {title:'Dela quiz-resultat', text:'Avsluta vårt quiz och dela dina resultat! Tagga en vän och utmana dem att göra samma sak!', action:{type:'quiz', url:'https://rattvisamalmo.github.io/advent-calendar/quiz.html'}}
-    ];
+  /* ============================================================
+     LOAD CALENDAR DATA FROM GOOGLE SHEET CSV
+     ============================================================ */
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtP7_COBqNFt8qdBndqcRNuLxp6a63p1p1IARXAgYVMxHUTNKXLAikdpwTyhLcEeHidDXMNKKYNXKB/pub?output=csv";
 
+  console.log("📄 CSV URL:", CSV_URL);
 
-    const grid = document.getElementById('calendar-grid');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalDay = document.getElementById('modal-day');
-    const modalText = document.getElementById('modal-text');
-    const actionButton = document.getElementById('action-button');
-    const closeBtn = document.getElementById('close-btn');
+  let calendarData = []; // Will be filled dynamically
 
-    function buildMailto(to, subject, body){
-      const safeTo = Array.isArray(to) ? to.join(',') : (to||'');
-      const parts = [];
-      if(subject) parts.push('subject='+encodeURIComponent(subject));
-      if(body) parts.push('body='+encodeURIComponent(body));
-      return 'mailto:'+safeTo + (parts.length ? ('?'+parts.join('&')) : '');
+  // dev toggle
+  const devMode = true;
+  const today = new Date();
+  const currentDay = devMode ? 24 : (today.getMonth() === 11 ? today.getDate() : 0);
+  console.log("📅 Current day:", currentDay);
 
+  /* ============================================================
+     FETCH + PARSE CSV → Build calendarData[]
+     ============================================================ */
+  function loadCalendarData() {
+    console.log("🔄 Starting CSV load...");
+
+    return new Promise((resolve, reject) => {
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+
+        beforeFirstChunk: () => console.log("📥 Fetch initiated..."),
+
+        complete: (results) => {
+          console.log("✅ CSV parse complete.");
+          console.log("📊 Raw results:", results);
+
+          if (!results || !results.data) {
+            console.error("❌ No data returned from CSV!");
+            reject("No data");
+            return;
+          }
+
+          const rows = results.data;
+          console.log("📄 Parsed rows:", rows);
+
+          console.log("🔧 Mapping rows to calendarData (auto day numbers)...");
+
+          calendarData = rows.map((r, i) => {
+            const mapped = {
+              day: i + 1, // Auto-assign day number
+              title: r.title || "",
+              text: r.text || "",
+              action: {
+                type: r.action_type || "",
+                url: r.action_url || "",
+                to: r.action_to || "",
+                subject: r.action_subject || "",
+                body: r.action_body || "",
+                script: r.action_script || "",
+                // multi-recipient (mailto-multi)
+                multi_to: r.action_to
+                  ? r.action_to.split(/[;,]/).map((x) => x.trim()).filter(Boolean)
+                  : [],
+              },
+            };
+
+            console.log(`➡️ Row ${i + 1} mapped:`, mapped);
+            return mapped;
+          });
+
+          console.log("📦 Final calendarData:", calendarData);
+
+          resolve();
+        },
+
+        error: (err) => {
+          console.error("❌ CSV parse error:", err);
+          reject(err);
+        },
+      });
+    });
+  }
+
+  /* ============================================================
+     MAILTO BUILDER
+     ============================================================ */
+  function buildMailto(to, subject, body) {
+    console.log("✉️ Building mailto link:", { to, subject, body });
+
+    const safeTo = Array.isArray(to) ? to.join(",") : to || "";
+    const parts = [];
+    if (subject) parts.push("subject=" + encodeURIComponent(subject));
+    if (body) parts.push("body=" + encodeURIComponent(body));
+    return "mailto:" + safeTo + (parts.length ? "?" + parts.join("&") : "");
+  }
+
+  /* ============================================================
+     UTILITY
+     ============================================================ */
+  function showToast(text) {
+    console.log("🔔 Toast:", text);
+    const t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = "0";
+      t.addEventListener("transitionend", () => t.remove());
+    }, 1800);
+  }
+
+  /* ============================================================
+     RENDER CALENDAR
+     ============================================================ */
+  async function renderCalendar() {
+    console.log("🚀 Rendering calendar...");
+
+    try {
+      await loadCalendarData();
+    } catch (err) {
+      console.error("❌ Failed to load calendar data:", err);
+      return;
     }
 
-    function showToast(text){
-      const t = document.createElement('div');
-      t.className='toast';
-      t.textContent=text;
-      document.body.appendChild(t);
-      setTimeout(()=>{t.style.opacity='0';t.addEventListener('transitionend',()=>t.remove());},1800);
-    }
+    console.log("📅 Data loaded. Count:", calendarData.length);
 
-    function tryShare(url){
-      if(navigator.share){
-        navigator.share({title:'Rättvisa Malmö',text:'Stöd detta initiativ',url}).catch(()=>{});
-        return true;
-      }
-      return false;
-    }
+    const grid = document.getElementById("calendar-grid");
+    console.log("🧱 Calendar grid element:", grid);
 
-    // Render calendar
+    grid.innerHTML = "";
+    console.log("🧹 Cleared calendar grid.");
+
     calendarData.forEach((item, index) =>{
       const container = document.createElement('div');
       container.className='door-container';
@@ -520,17 +621,18 @@
             // set action button text
             if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
             else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
-            else if(item.action.type === 'link') actionButton.textContent = 'Öppna sidan';
+            else if(item.action.type === 'link') actionButton.textContent = 'Öppna länk';
             else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
             else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
             else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
             else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
-            else if(item.action.type === 'dm') actionButton.textContent = 'Skicka DM';
+            else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
             else if(item.action.type === 'video') actionButton.textContent = 'Se video';
             else actionButton.textContent = 'Gör aktiviteten';
 
-            modalOverlay.dataset.current = (index + 1);
-            modalOverlay.classList.add('active');
+            /*modalOverlay.dataset.current = (index + 1);
+            modalOverlay.classList.add('active');*/
+            openModal(item, (index + 1));
           },280);
         });
       }
@@ -539,64 +641,104 @@
       grid.appendChild(container);
     });
 
-    closeBtn.addEventListener('click', ()=>{ modalOverlay.classList.remove('active'); });
-    modalOverlay.addEventListener('click',(e)=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('active'); });
+    console.log("🏁 Finished rendering.");
+    document.getElementById("loading-screen").style.display = "none";
+  }
 
-    actionButton.addEventListener('click', ()=>{
-      const day = Number(modalOverlay.dataset.current);
-      const item = calendarData[day-1];
-      if(!item) return;
+  /* ============================================================
+     MODAL LOGIC
+     ============================================================ */
+  const modalOverlay = document.getElementById("modal-overlay");
+  const modalDay = document.getElementById("modal-day");
+  const modalText = document.getElementById("modal-text");
+  const actionButton = document.getElementById("action-button");
+  const closeBtn = document.getElementById("close-btn");
 
-      switch(item.action.type){
-        case 'mailto':
-          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
-          break;
-        case 'mailto-multi':
-          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
-          break;
-        case 'share':
-          if(!tryShare(item.action.url)){
-            navigator.clipboard.writeText(item.action.url).then(()=>{ showToast('Länken kopierad — klistra in i din app för att dela.'); window.open(item.action.url,'_blank'); });
+  function openModal(item, day) {
+    console.log("📬 Opening modal for day:", day, item);
+
+    modalDay.textContent = "Dag " + day;
+    modalText.innerHTML = item.text;
+
+    const a = item.action;
+    console.log("🛠️ Action:", a);
+
+    actionButton.style.display = "block";
+
+    actionButton.onclick = () => {
+      console.log("▶️ Action button clicked:", a);
+
+      switch (a.type) {
+        case "share":
+          if (!tryShare(a.url)) {
+            navigator.clipboard.writeText(a.url);
+            showToast("Länk kopierad!");
           }
           break;
-        case 'link':
-          window.open(item.action.url,'_blank');
+
+        case "link":
+        case "video":
+        case "download":
+        case "quiz":
+        case 'video':
+        case 'social_comment':
+          window.open(a.url, "_blank");
           break;
+
+        case "mailto":
+          window.location.href = buildMailto(a.to, a.subject, a.body);
+          break;
+
+        case "mailto-multi":
+          window.location.href = buildMailto(a.multi_to, a.subject, a.body);
+          break;
+
         case 'copy':
           navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
           break;
-        case 'quiz':
-          window.open(item.action.url,'_blank');
-          break;
-        case 'download':
-          if(item.action.url) window.open(item.action.url,'_blank');
-          break;
-        case 'call':
-          alert(item.action.script || 'Ringt manus saknas.');
-          break;
+        
         case 'dm':
-          showToast('Öppna din meddelandeapp och skicka ett vänligt DM.');
+          navigator.clipboard.writeText(item.action.text).then(()=> showToast('DM kopierad till urklipp.'));
           break;
-        case 'video':
-          showToast('Öppna kampanjens video och lämna en kommentar.');
+
+        case "call":
+          alert(a.script || "Ring ditt korta manus!");
           break;
+
         case 'poll':
           showToast('Delta i en snabb enkät (länk öppnas).');
           break;
-        case 'social_comment':
-          showToast('Öppna sociala kanalen och lämna en kommentar.');
-          break;
+
         case 'ugc':
           showToast('Dela din korta anledning och tagga kampanjen.');
           break;
+
         case 'offline':
           showToast('Prata med en vän — tack!');
           break;
+
         default:
           showToast('Aktivitet utförd — tack!');
       }
+    };
 
-    });
+    actionButton.textContent = item.action.type ? item.title : "Gör uppgiften";
+
+    modalOverlay.classList.add("active");
+  }
+
+  closeBtn.addEventListener("click", () => {
+    console.log("❌ Modal closed.");
+    modalOverlay.classList.remove("active");
+  });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  console.log("🏁 INIT → calling renderCalendar()");
+  renderCalendar();
   </script>
+
+
 </body>
 </html>
