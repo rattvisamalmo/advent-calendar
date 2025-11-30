@@ -519,6 +519,15 @@
     return false;
   }
 
+  function tryDM(body){
+    if(navigator.share){
+      navigator.share({title:'Rättvisa Malmö',text:body}).catch(()=>{});
+      return true;
+    }
+    return false;
+  }
+
+
   /* ============================================================
      RENDER CALENDAR
      ============================================================ */
@@ -704,7 +713,9 @@
           break;
         
         case 'dm':
-          navigator.clipboard.writeText(a.body).then(()=> showToast('DM kopierad till urklipp.'));
+          if (!tryDM(a.body)) {
+            navigator.clipboard.writeText(a.body).then(()=> showToast('DM kopierad till urklipp.'));
+          }
           break;
 
         case "call":
