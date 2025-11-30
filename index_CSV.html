@@ -402,7 +402,8 @@
      ============================================================ */
   async function renderCalendar() {
     await loadCalendarData();
-
+    alert(len(calendarData));
+    
     const grid = document.getElementById("calendar-grid");
     grid.innerHTML = ""; // clear any old content
 
