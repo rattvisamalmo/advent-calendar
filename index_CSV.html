@@ -316,10 +316,7 @@
 <body>
   <!-- Snow canvas -->
   <canvas id="snow-canvas"></canvas>
-  <div id="loading-screen">
-    <div class="spinner"></div>
-    <p>Loading calendar…</p>
-  </div>
+  
 
   <div class="container">
     <div class="header">
@@ -327,7 +324,12 @@
       <p>Adventskalender — 24 dagar av handling för en bättre stad</p>
     </div>
 
-    <div class="calendar-grid" id="calendar-grid" aria-live="polite"></div>
+    <div class="calendar-grid" id="calendar-grid" aria-live="polite">
+      <div id="loading-screen">
+        <div class="spinner"></div>
+          <p>Loading calendar…</p>
+      </div>
+    </div>
   </div>
 
   <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
@@ -640,6 +642,7 @@
     });
 
     console.log("🏁 Finished rendering.");
+    document.getElementById("loading-screen").style.display = "none";
   }
 
   /* ============================================================
@@ -734,7 +737,6 @@
      ============================================================ */
   console.log("🏁 INIT → calling renderCalendar()");
   renderCalendar();
-  document.getElementById("loading-screen").style.display = "none";
   </script>
 
 
