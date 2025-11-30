@@ -126,6 +126,15 @@
       }
     }
 
+    /* Wiggle animation */
+    @keyframes hat-wiggle {
+      0% { transform: rotate(-45deg); }
+      25% { transform: rotate(-35deg); }
+      50% { transform: rotate(-50deg); }
+      75% { transform: rotate(-40deg); }
+      100% { transform: rotate(-45deg); }
+    }
+
     /* Santa hat for today’s door */
     .door.today::before {
       content: '';
@@ -139,6 +148,7 @@
       transform-origin: bottom right;
       pointer-events: none;
       z-index: 10;
+      animation: hat-wiggle 1.5s ease-in-out infinite;
     }
 
 
