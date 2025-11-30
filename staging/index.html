@@ -615,25 +615,8 @@
 
           door.classList.add('flipped');
           setTimeout(()=>{
-            modalDay.textContent='Dag '+(index + 1);
-            modalText.textContent=item.text;
-            
-            // set action button text
-            if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
-            else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
-            else if(item.action.type === 'link') actionButton.textContent = 'Öppna länk';
-            else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
-            else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
-            else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
-            else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
-            else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
-            else if(item.action.type === 'video') actionButton.textContent = 'Se video';
-            else actionButton.textContent = 'Gör aktiviteten';
-
-            /*modalOverlay.dataset.current = (index + 1);
-            modalOverlay.classList.add('active');*/
             openModal(item, (index + 1));
-          },280);
+          },400);
         });
       }
 
@@ -665,6 +648,21 @@
 
     actionButton.style.display = "block";
 
+    modalDay.textContent='Dag '+(index + 1);
+    modalText.textContent=item.text;
+    
+    // set action button text
+    if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
+    else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
+    else if(item.action.type === 'link') actionButton.textContent = 'Öppna länk';
+    else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
+    else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
+    else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
+    else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
+    else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
+    else if(item.action.type === 'video') actionButton.textContent = 'Se video';
+    else actionButton.textContent = 'Gör aktiviteten';
+    
     actionButton.onclick = () => {
       console.log("▶️ Action button clicked:", a);
 
