@@ -661,8 +661,8 @@
     else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
     else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
     else if(item.action.type === 'video') actionButton.textContent = 'Se video';
-    else actionButton.textContent = 'Gör aktiviteten';
-    
+    else actionButton.textContent = item.title;
+
     actionButton.onclick = () => {
       console.log("▶️ Action button clicked:", a);
 
@@ -719,8 +719,6 @@
           showToast('Aktivitet utförd — tack!');
       }
     };
-
-    actionButton.textContent = item.action.type ? item.title : "Gör uppgiften";
 
     modalOverlay.classList.add("active");
   }
