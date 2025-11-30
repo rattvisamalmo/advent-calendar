@@ -307,6 +307,65 @@
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    // ---- Diagonal Snow effect ----
+    (function(){
+      const canvas = document.getElementById('snow-canvas');
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', ()=>{
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const flakes = [];
+      const flakeCount = 8;
+      for(let i=0; i<flakeCount; i++){
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 3 + 2,
+          d: Math.random() + 1,
+          tilt: Math.random() * 2,
+          drift: Math.random() * 0.5 + 0.2 // slight horizontal drift
+        });
+      }
+
+      function draw(){
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.beginPath();
+        for(let f of flakes){
+          ctx.moveTo(f.x, f.y);
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
+        }
+        ctx.fill();
+        update();
+      }
+
+      let angle = 0;
+      function update(){
+        angle += 0.01;
+        for(let f of flakes){
+          f.y += Math.pow(f.d, 1.5) + 0.5;
+          f.x += Math.sin(angle) * f.d * 0.3 + f.drift;
+          if(f.y > height){
+            f.y = -f.r;
+            f.x = Math.random() * width;
+          }
+          if(f.x > width) f.x = 0;
+        }
+      }
+
+      function animate(){
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+
   console.log("🔵 Script started.");
 
   /* ============================================================
@@ -438,72 +497,112 @@
     grid.innerHTML = "";
     console.log("🧹 Cleared calendar grid.");
 
-    calendarData.forEach((item, idx) => {
-      console.log(`➡️ Rendering day ${item.day}:`, item);
+    calendarData.forEach((item, index) =>{
+      const container = document.createElement('div');
+      container.className='door-container';
 
-      const day = item.day;
-
-      const container = document.createElement("div");
-      container.className = "door-container";
-
-      const door = document.createElement("div");
-      door.className = "door";
-      door.dataset.day = day;
-
-      const inner = document.createElement("div");
-      inner.className = "door-inner";
-
-      const front = document.createElement("div");
-      front.className = "door-front";
-      front.innerHTML = `
-        <div style="text-align:center">
-          <div class="door-number">${day}</div>
-          <div class="door-sub">${item.title}</div>
-        </div>
-      `;
-
-      const back = document.createElement("div");
-      back.className = "door-back";
-      back.innerHTML = `<div class="door-back-content">${item.text}</div>`;
-
-      inner.appendChild(front);
-      inner.appendChild(back);
+      const door = document.createElement('div');
+      door.className='door';
+      const inner = document.createElement('div');
+      inner.className='door-inner';
       door.appendChild(inner);
+      door.setAttribute('data-day', (index + 1));
+
+      const front = document.createElement('div'); front.className='door-front';
+      front.innerHTML=`<div style='text-align:center'><div class='door-number'>${(index + 1)}</div><div class='door-sub'>${item.title}</div></div>`;
+      const back = document.createElement('div'); back.className='door-back';
+      back.innerHTML=`<div class='door-back-content'>${item.title}</div>`;
+
+      inner.appendChild(front); inner.appendChild(back);
       container.appendChild(door);
 
-      // Locking
-      const unlocked = day <= currentDay;
-      console.log(`🔒 Day ${day} unlocked?`, unlocked);
+      const isUnlocked = (index + 1) <= currentDay && currentDay > 0;
 
-      if (!unlocked) {
-        door.classList.add("locked");
+      if(!isUnlocked){
+        door.classList.add('locked');
 
-        const lockOverlay = document.createElement("div");
-        lockOverlay.className = "locked-overlay";
-        lockOverlay.innerHTML = `<div class="lock">🔒</div>`;
-        container.appendChild(lockOverlay);
+        // add frosted overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'locked-overlay';
+        overlay.innerHTML = '<span class="lock">🔒</span>';
+        door.appendChild(overlay);
+
+        const tooltip = document.createElement('div');
+        tooltip.className='tooltip';
+        tooltip.textContent='Låst - öppnas på dag '+ (index + 1);
+        document.body.appendChild(tooltip); // move tooltip to body
+
+        container.addEventListener('mouseenter',()=>{
+          const rect = container.getBoundingClientRect();
+          tooltip.style.left = rect.left + rect.width/2 + 'px';
+          tooltip.style.top = rect.bottom + 8 + 'px'; // 8px below the card
+          tooltip.classList.add('show');
+        });
+
+        container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
+        container.addEventListener('click', ()=>{ door.classList.add('shake'); tooltip.classList.add('show'); setTimeout(()=>{door.classList.remove('shake'); tooltip.classList.remove('show');},2000); });
+      } else {
+        if((index + 1) === currentDay) door.classList.add('today');
+        container.addEventListener('click', ()=>{
+          // Create sparkle burst
+          const rect = container.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          // Create 15 sparkle particles
+          for (let i = 0; i < 15; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle-particle';
+            
+            // Random golden colors
+            const goldColors = ['#FFD700', '#FFA500', '#FFED4E', '#FFBF00', '#FFE55C'];
+            const color = goldColors[Math.floor(Math.random() * goldColors.length)];
+            
+            const size = Math.random() * 8 + 4;
+            const angle = (Math.PI * 2 * i) / 15 + (Math.random() - 0.5) * 0.5;
+            const distance = Math.random() * 80 + 40;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            sparkle.style.left = `${centerX}px`;
+            sparkle.style.top = `${centerY}px`;
+            sparkle.style.width = `${size}px`;
+            sparkle.style.height = `${size}px`;
+            sparkle.style.backgroundColor = color;
+            sparkle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+            sparkle.style.setProperty('--tx', `${tx}px`);
+            sparkle.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1000);
+          }
+
+          door.classList.add('flipped');
+          setTimeout(()=>{
+            modalDay.textContent='Dag '+(index + 1);
+            modalText.textContent=item.text;
+            
+            // set action button text
+            if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
+            else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
+            else if(item.action.type === 'link') actionButton.textContent = 'Öppna sidan';
+            else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
+            else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
+            else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
+            else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
+            else if(item.action.type === 'dm') actionButton.textContent = 'Skicka DM';
+            else if(item.action.type === 'video') actionButton.textContent = 'Se video';
+            else actionButton.textContent = 'Gör aktiviteten';
+
+            /*modalOverlay.dataset.current = (index + 1);
+            modalOverlay.classList.add('active');*/
+            openModal(item, (index + 1));
+          },280);
+        });
       }
 
-      // Today glow
-      if (day === currentDay && unlocked) {
-        console.log("✨ Today’s door:", day);
-        door.classList.add("today");
-      }
-
-      // Click
-      door.addEventListener("click", () => {
-        console.log("🖱️ Door clicked:", day, item);
-
-        if (!unlocked) {
-          console.log("🚫 Door locked, shaking.");
-          door.classList.add("shake");
-          setTimeout(() => door.classList.remove("shake"), 400);
-          return;
-        }
-
-        openModal(item, day);
-      });
-
+      container.tabIndex=0;
       grid.appendChild(container);
     });
 
@@ -519,7 +618,7 @@
   const actionButton = document.getElementById("action-button");
   const closeBtn = document.getElementById("close-btn");
 
-  function openModal(item, day) {
+  function (item, day) {
     console.log("📬 Opening modal for day:", day, item);
 
     modalDay.textContent = "Dag " + day;
