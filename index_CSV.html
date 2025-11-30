@@ -305,408 +305,243 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    // ---- Diagonal Snow effect ----
-    (function(){
-      const canvas = document.getElementById('snow-canvas');
-      const ctx = canvas.getContext('2d');
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
+  /* ============================================================
+     LOAD CALENDAR DATA FROM GOOGLE SHEET CSV
+     ============================================================ */
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vS7OOO4hXUtFAYbhMQyvDktZg_R6qhvCpKMBlgGpLIulnUSAhy_7WUPuKdAe8u3r74dmy9AYoY7fAaY/pub?output=csv";
 
-      window.addEventListener('resize', ()=>{
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
+  let calendarData = []; // Will be filled dynamically
 
-      const flakes = [];
-      const flakeCount = 8;
-      for(let i=0; i<flakeCount; i++){
-        flakes.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          r: Math.random() * 3 + 2,
-          d: Math.random() + 1,
-          tilt: Math.random() * 2,
-          drift: Math.random() * 0.5 + 0.2 // slight horizontal drift
-        });
-      }
+  // --- dev toggle ---
+  const devMode = true;
+  const today = new Date();
+  const currentDay = devMode ? 24 : (today.getMonth() === 11 ? today.getDate() : 0);
 
-      function draw(){
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = "rgba(255,255,255,0.9)";
-        ctx.beginPath();
-        for(let f of flakes){
-          ctx.moveTo(f.x, f.y);
-          ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-        }
-        ctx.fill();
-        update();
-      }
+  /* ============================================================
+     FETCH + PARSE CSV → Build calendarData[]
+     ============================================================ */
+  function loadCalendarData() {
+    return new Promise((resolve) => {
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        complete: (results) => {
+          const rows = results.data;
 
-      let angle = 0;
-      function update(){
-        angle += 0.01;
-        for(let f of flakes){
-          f.y += Math.pow(f.d, 1.5) + 0.5;
-          f.x += Math.sin(angle) * f.d * 0.3 + f.drift;
-          if(f.y > height){
-            f.y = -f.r;
-            f.x = Math.random() * width;
-          }
-          if(f.x > width) f.x = 0;
-        }
-      }
+          calendarData = rows
+            .filter((r) => r.day && r.title) // ignore blank rows
+            .map((r) => {
+              const dayNum = Number(r.day.trim());
 
-      function animate(){
-        draw();
-        requestAnimationFrame(animate);
-      }
+              const action = {
+                type: r.action_type || "",
+                url: r.action_url || "",
+                to: r.action_to || "",
+                subject: r.action_subject || "",
+                body: r.action_body || "",
+                script: r.action_script || "",
+                multi_to: r.action_multi_to
+                  ? r.action_multi_to.split(",").map((x) => x.trim())
+                  : [],
+              };
 
-      animate();
-    })();
-    
-    const devMode = true; // override locking if true
+              return {
+                day: dayNum,
+                title: r.title || "",
+                text: r.text || "",
+                action,
+              };
+            });
 
-    const today = new Date();
-    const currentDay = devMode ? 24 : (today.getMonth()===11 ? today.getDate() : 0);
-
-    // Your published Google Sheet CSV URL:
-    const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtP7_COBqNFt8qdBndqcRNuLxp6a63p1p1IARXAgYVMxHUTNKXLAikdpwTyhLcEeHidDXMNKKYNXKB/pub?output=csv";
-
-    function buildActionFromCSV(row) {
-      const t = row.action_type?.trim().toLowerCase();
-
-      switch (t) {
-        case "share":
-        case "link":
-        case "download":
-        case "quiz":
-          return {
-            type: "link",
-            url: row.action_url,
-            text: row.action_text || "Open"
-          };
-
-        case "dm":
-          return {
-            type: "link",
-            url: "https://www.instagram.com/direct/inbox/",
-            text: row.action_text || "Send DM"
-          };
-
-        case "mailto":
-          return {
-            type: "link",
-            url: `mailto:${row.action_to}?subject=${row.action_subject}&body=${row.action_body}`,
-            text: row.action_text || "Send Email"
-          };
-
-        case "mailto-multi":
-          return {
-            type: "link",
-            url: `mailto:${row.action_to}?subject=${row.action_subject}&body=${row.action_body}`,
-            text: row.action_text || "Email All"
-          };
-
-        case "call":
-          return {
-            type: "link",
-            url: `tel:${row.action_to}`,
-            text: row.action_text || "Call"
-          };
-
-        case "social_comment":
-        case "social_tag":
-        case "ugc":
-        case "poll":
-        case "offline":
-          return {
-            type: "none",
-            text: row.action_text || "Done"
-          };
-
-        default:
-          return null;
-      }
-    }
-
-    function openDayModal(data) {
-      const modal = document.getElementById("modal");
-      modal.classList.add("open");
-
-      document.getElementById("modal-title").textContent = data.title || "";
-      document.getElementById("modal-description").textContent = data.text || "";
-
-      const actionBtn = document.getElementById("modal-action-btn");
-
-      const action = buildActionFromCSV(data);
-
-      if (!action) {
-        actionBtn.style.display = "none";
-        return;
-      }
-
-      actionBtn.style.display = "inline-block";
-      actionBtn.textContent = action.text;
-
-      if (action.type === "link") {
-        actionBtn.href = action.url;
-        actionBtn.target = "_blank";
-      } else if (action.type === "copy") {
-        actionBtn.href = "#";
-        actionBtn.onclick = () => {
-          navigator.clipboard.writeText(action.copy);
-          showToast("Copied!");
-        };
-      } else if (action.type === "none") {
-        actionBtn.href = "#";
-        actionBtn.onclick = () => {};
-      }
-    }
-
-    function shakeLockedDoor(door) {
-      door.classList.add("shake");
-      setTimeout(() => door.classList.remove("shake"), 500);
-    }
-
-    // Load sheet data
-    function loadCalendarData() {
-      return fetch(csvURL)
-        .then(r => r.text())
-        .then(csv => Papa.parse(csv, { header: true }).data)
-        .then(rows => rows.filter(r => r.title && r.title.trim())); // remove blank rows
-    }
-
-    // Build doors dynamically
-    loadCalendarData().then(days => {
-      const grid = document.querySelector(".calendar-grid");
-      const today = new Date().getDate();
-
-      days.forEach((data, index) => {
-        const dayNumber = index + 1;
-
-        const door = document.createElement("div");
-        door.classList.add("door");
-
-        if (dayNumber === today) {
-          door.classList.add("today");
-        }
-        if (dayNumber > today) {
-          door.classList.add("locked");
-        }
-
-        door.innerHTML = `<span>${dayNumber}</span>`;
-
-        // Assign click event
-        if (dayNumber <= today) {
-          door.addEventListener("click", () => openDayModal(data));
-        } else {
-          door.addEventListener("click", () => shakeLockedDoor(door));
-        }
-
-        grid.appendChild(door);
+          resolve();
+        },
       });
     });
+  }
 
-    const grid = document.getElementById('calendar-grid');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalDay = document.getElementById('modal-day');
-    const modalText = document.getElementById('modal-text');
-    const actionButton = document.getElementById('action-button');
-    const closeBtn = document.getElementById('close-btn');
+  /* ============================================================
+     BUILD MAILTO STRING
+     ============================================================ */
+  function buildMailto(to, subject, body) {
+    const safeTo = Array.isArray(to) ? to.join(",") : to || "";
+    const parts = [];
+    if (subject) parts.push("subject=" + encodeURIComponent(subject));
+    if (body) parts.push("body=" + encodeURIComponent(body));
+    return "mailto:" + safeTo + (parts.length ? "?" + parts.join("&") : "");
+  }
 
-    function buildMailto(to, subject, body){
-      const safeTo = Array.isArray(to) ? to.join(',') : (to||'');
-      const parts = [];
-      if(subject) parts.push('subject='+encodeURIComponent(subject));
-      if(body) parts.push('body='+encodeURIComponent(body));
-      return 'mailto:'+safeTo + (parts.length ? ('?'+parts.join('&')) : '');
+  /* ============================================================
+     UTILITY FUNCTIONS
+     ============================================================ */
+  function showToast(text) {
+    const t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = "0";
+      t.addEventListener("transitionend", () => t.remove());
+    }, 1800);
+  }
+
+  function tryShare(url) {
+    if (navigator.share) {
+      navigator
+        .share({ title: "Rättvisa Malmö", text: "Stöd detta initiativ", url })
+        .catch(() => {});
+      return true;
     }
+    return false;
+  }
 
-    function showToast(text){
-      const t = document.createElement('div');
-      t.className='toast';
-      t.textContent=text;
-      document.body.appendChild(t);
-      setTimeout(()=>{t.style.opacity='0';t.addEventListener('transitionend',()=>t.remove());},1800);
-    }
+  /* ============================================================
+     RENDER CALENDAR AFTER CSV LOAD
+     ============================================================ */
+  async function renderCalendar() {
+    await loadCalendarData();
 
-    function tryShare(url){
-      if(navigator.share){
-        navigator.share({title:'Rättvisa Malmö',text:'Stöd detta initiativ',url}).catch(()=>{});
-        return true;
-      }
-      return false;
-    }
+    const grid = document.getElementById("calendar-grid");
+    grid.innerHTML = ""; // clear any old content
 
-    /*// Render calendar
-    calendarData.forEach((item, index) =>{
-      const container = document.createElement('div');
-      container.className='door-container';
+    calendarData.forEach((item, idx) => {
+      const day = item.day || idx + 1;
 
-      const door = document.createElement('div');
-      door.className='door';
-      const inner = document.createElement('div');
-      inner.className='door-inner';
+      const container = document.createElement("div");
+      container.className = "door-container";
+
+      const door = document.createElement("div");
+      door.className = "door";
+      door.dataset.day = day;
+
+      const inner = document.createElement("div");
+      inner.className = "door-inner";
+
+      // front
+      const front = document.createElement("div");
+      front.className = "door-front";
+      front.innerHTML = `
+        <div style="text-align:center">
+          <div class="door-number">${day}</div>
+          <div class="door-sub">${item.title}</div>
+        </div>
+      `;
+
+      // back
+      const back = document.createElement("div");
+      back.className = "door-back";
+      back.innerHTML = `<div class="door-back-content">${item.text}</div>`;
+
+      inner.appendChild(front);
+      inner.appendChild(back);
       door.appendChild(inner);
-      door.setAttribute('data-day', (index + 1));
-
-      const front = document.createElement('div'); front.className='door-front';
-      front.innerHTML=`<div style='text-align:center'><div class='door-number'>${(index + 1)}</div><div class='door-sub'>${item.title}</div></div>`;
-      const back = document.createElement('div'); back.className='door-back';
-      back.innerHTML=`<div class='door-back-content'>${item.title}</div>`;
-
-      inner.appendChild(front); inner.appendChild(back);
       container.appendChild(door);
 
-      const isUnlocked = (index + 1) <= currentDay && currentDay > 0;
+      // LOCKING LOGIC
+      const unlocked = day <= currentDay;
+      if (!unlocked) {
+        door.classList.add("locked");
 
-      if(!isUnlocked){
-        door.classList.add('locked');
-
-        // add frosted overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'locked-overlay';
-        overlay.innerHTML = '<span class="lock">🔒</span>';
-        door.appendChild(overlay);
-
-        const tooltip = document.createElement('div');
-        tooltip.className='tooltip';
-        tooltip.textContent='Låst - öppnas på dag '+ (index + 1);
-        document.body.appendChild(tooltip); // move tooltip to body
-
-        container.addEventListener('mouseenter',()=>{
-          const rect = container.getBoundingClientRect();
-          tooltip.style.left = rect.left + rect.width/2 + 'px';
-          tooltip.style.top = rect.bottom + 8 + 'px'; // 8px below the card
-          tooltip.classList.add('show');
-        });
-
-        container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
-        container.addEventListener('click', ()=>{ door.classList.add('shake'); tooltip.classList.add('show'); setTimeout(()=>{door.classList.remove('shake'); tooltip.classList.remove('show');},2000); });
-      } else {
-        if((index + 1) === currentDay) door.classList.add('today');
-        container.addEventListener('click', ()=>{
-          // Create sparkle burst
-          const rect = container.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          
-          // Create 15 sparkle particles
-          for (let i = 0; i < 15; i++) {
-            const sparkle = document.createElement('div');
-            sparkle.className = 'sparkle-particle';
-            
-            // Random golden colors
-            const goldColors = ['#FFD700', '#FFA500', '#FFED4E', '#FFBF00', '#FFE55C'];
-            const color = goldColors[Math.floor(Math.random() * goldColors.length)];
-            
-            const size = Math.random() * 8 + 4;
-            const angle = (Math.PI * 2 * i) / 15 + (Math.random() - 0.5) * 0.5;
-            const distance = Math.random() * 80 + 40;
-            const tx = Math.cos(angle) * distance;
-            const ty = Math.sin(angle) * distance;
-            
-            sparkle.style.left = `${centerX}px`;
-            sparkle.style.top = `${centerY}px`;
-            sparkle.style.width = `${size}px`;
-            sparkle.style.height = `${size}px`;
-            sparkle.style.backgroundColor = color;
-            sparkle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
-            sparkle.style.setProperty('--tx', `${tx}px`);
-            sparkle.style.setProperty('--ty', `${ty}px`);
-            
-            document.body.appendChild(sparkle);
-            
-            setTimeout(() => sparkle.remove(), 1000);
-          }
-
-          door.classList.add('flipped');
-          setTimeout(()=>{
-            modalDay.textContent='Dag '+(index + 1);
-            modalText.textContent=item.text;
-            
-            // set action button text
-            if(item.action.type === 'mailto' || item.action.type === 'mailto-multi') actionButton.textContent = 'Skicka mejl';
-            else if(item.action.type === 'share') actionButton.textContent = 'Dela vidare';
-            else if(item.action.type === 'link') actionButton.textContent = 'Öppna sidan';
-            else if(item.action.type === 'quiz') actionButton.textContent = 'Starta quiz';
-            else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
-            else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
-            else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
-            else if(item.action.type === 'dm') actionButton.textContent = 'Skicka DM';
-            else if(item.action.type === 'video') actionButton.textContent = 'Se video';
-            else actionButton.textContent = 'Gör aktiviteten';
-
-            modalOverlay.dataset.current = (index + 1);
-            modalOverlay.classList.add('active');
-          },280);
-        });
+        const lockOverlay = document.createElement("div");
+        lockOverlay.className = "locked-overlay";
+        lockOverlay.innerHTML = `<div class="lock">🔒</div>`;
+        container.appendChild(lockOverlay);
       }
 
-      container.tabIndex=0;
+      // TODAY highlight
+      if (day === currentDay && unlocked) {
+        door.classList.add("today");
+      }
+
+      // click handler
+      door.addEventListener("click", () => {
+        if (!unlocked) {
+          door.classList.add("shake");
+          setTimeout(() => door.classList.remove("shake"), 400);
+          return;
+        }
+        openModal(item, day);
+      });
+
       grid.appendChild(container);
     });
+  }
 
-    closeBtn.addEventListener('click', ()=>{ modalOverlay.classList.remove('active'); });
-    modalOverlay.addEventListener('click',(e)=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('active'); });
+  /* ============================================================
+     MODAL LOGIC
+     ============================================================ */
+  const modalOverlay = document.getElementById("modal-overlay");
+  const modalDay = document.getElementById("modal-day");
+  const modalText = document.getElementById("modal-text");
+  const actionButton = document.getElementById("action-button");
+  const closeBtn = document.getElementById("close-btn");
 
-    actionButton.addEventListener('click', ()=>{
-      const day = Number(modalOverlay.dataset.current);
-      const item = calendarData[day-1];
-      if(!item) return;
+  function openModal(item, day) {
+    modalDay.textContent = "Dag " + day;
+    modalText.innerHTML = item.text;
 
-      switch(item.action.type){
-        case 'mailto':
-          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
-          break;
-        case 'mailto-multi':
-          window.location.href = buildMailto(item.action.to, item.action.subject, item.action.body);
-          break;
-        case 'share':
-          if(!tryShare(item.action.url)){
-            navigator.clipboard.writeText(item.action.url).then(()=>{ showToast('Länken kopierad — klistra in i din app för att dela.'); window.open(item.action.url,'_blank'); });
+    const a = item.action;
+
+    // configure button
+    actionButton.style.display = "block";
+
+    actionButton.onclick = () => {
+      switch (a.type) {
+        case "share":
+          if (!tryShare(a.url)) {
+            navigator.clipboard.writeText(a.url);
+            showToast("Länk kopierad!");
           }
           break;
-        case 'link':
-          window.open(item.action.url,'_blank');
-          break;
-        case 'copy':
-          navigator.clipboard.writeText(item.action.text).then(()=> showToast('Länk kopierad till urklipp.'));
-          break;
-        case 'quiz':
-          window.open(item.action.url,'_blank');
-          break;
-        case 'download':
-          if(item.action.url) window.open(item.action.url,'_blank');
-          break;
-        case 'call':
-          alert(item.action.script || 'Ringt manus saknas.');
-          break;
-        case 'dm':
-          showToast('Öppna din meddelandeapp och skicka ett vänligt DM.');
-          break;
-        case 'video':
-          showToast('Öppna kampanjens video och lämna en kommentar.');
-          break;
-        case 'poll':
-          showToast('Delta i en snabb enkät (länk öppnas).');
-          break;
-        case 'social_comment':
-          showToast('Öppna sociala kanalen och lämna en kommentar.');
-          break;
-        case 'ugc':
-          showToast('Dela din korta anledning och tagga kampanjen.');
-          break;
-        case 'offline':
-          showToast('Prata med en vän — tack!');
-          break;
-        default:
-          showToast('Aktivitet utförd — tack!');
-      }
 
-    });*/
+        case "link":
+        case "video":
+        case "download":
+        case "quiz":
+          window.open(a.url, "_blank");
+          break;
+
+        case "mailto":
+          window.location.href = buildMailto(a.to, a.subject, a.body);
+          break;
+
+        case "mailto-multi":
+          window.location.href = buildMailto(a.multi_to, a.subject, a.body);
+          break;
+
+        case "call":
+          alert(a.script || "Ring ditt korta manus!");
+          break;
+
+        case "poll":
+        case "ugc":
+        case "social_comment":
+        case "social_tag":
+        case "offline":
+          showToast("Klart!");
+          break;
+
+        default:
+          showToast("Genomfört!");
+      }
+    };
+
+    actionButton.textContent = item.action.type ? item.title : "Gör uppgiften";
+
+    modalOverlay.classList.add("active");
+  }
+
+  closeBtn.addEventListener("click", () => {
+    modalOverlay.classList.remove("active");
+  });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  renderCalendar();
   </script>
+
 </body>
 </html>
