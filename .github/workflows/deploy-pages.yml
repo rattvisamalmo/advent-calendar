@@ -1,0 +1,41 @@
+name: Build & Deploy Advent Calendar
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1️⃣ Checkout the branch
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Build step (optional if you just have static index.html)
+      - name: Build site
+        run: |
+          echo "No build step needed for static HTML"
+
+      # 3️⃣ Configure Pages
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+
+      # 4️⃣ Upload artifact (static site folder)
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./  # folder with index.html
+
+      # 5️⃣ Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v2
+        with:
+          branch: ${{ github.ref_name }}  # deploys based on current branch
+
+      # 6️⃣ Output deployed URL
+      - name: Show deployment URL
+        run: echo "Site deployed to ${{ steps.deploy.outputs.page_url }}"
