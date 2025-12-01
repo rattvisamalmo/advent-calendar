@@ -414,7 +414,7 @@
   let calendarData = []; // Will be filled dynamically
 
   // dev toggle
-  const devMode = true;
+  const devMode = false;
   const today = new Date();
   const currentDay = devMode ? 24 : (today.getMonth() === 11 ? today.getDate() : 0);
   console.log("📅 Current day:", currentDay);
@@ -510,6 +510,23 @@
       t.addEventListener("transitionend", () => t.remove());
     }, 1800);
   }
+
+  function tryShare(url){
+    if(navigator.share){
+      navigator.share({title:'Rättvisa Malmö',text:'Stöd detta initiativ',url}).catch(()=>{});
+      return true;
+    }
+    return false;
+  }
+
+  function tryDM(body){
+    if(navigator.share){
+      navigator.share({title:'Rättvisa Malmö',text:body}).catch(()=>{});
+      return true;
+    }
+    return false;
+  }
+
 
   /* ============================================================
      RENDER CALENDAR
@@ -659,7 +676,7 @@
     else if(item.action.type === 'copy') actionButton.textContent = 'Kopiera länk';
     else if(item.action.type === 'download') actionButton.textContent = 'Ladda ner';
     else if(item.action.type === 'call') actionButton.textContent = 'Se manus';
-    else if(item.action.type === 'dm') actionButton.textContent = 'Kopiera DM';
+    else if(item.action.type === 'dm') actionButton.textContent = 'Dela DM';
     else if(item.action.type === 'video') actionButton.textContent = 'Se video';
     else actionButton.textContent = item.title;
 
@@ -696,7 +713,9 @@
           break;
         
         case 'dm':
-          navigator.clipboard.writeText(a.body).then(()=> showToast('DM kopierad till urklipp.'));
+          if (!tryDM(a.body)) {
+            navigator.clipboard.writeText(a.body).then(()=> showToast('DM kopierad till urklipp.'));
+          }
           break;
 
         case "call":
