@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rättvisa Malmö — Advent Calendar</title>
+  <title>Rättvisa Malmö — Adventskalender</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=MuseoModerno:wght@300;900&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -561,7 +561,7 @@
       door.setAttribute('data-day', (index + 1));
 
       const front = document.createElement('div'); front.className='door-front';
-      front.innerHTML=`<div style='text-align:center'><div class='door-number'>${(index + 1)}</div><div class='door-sub'>${item.title}</div></div>`;
+      front.innerHTML=`<div style='text-align:center'><div class='door-number'>${(index + 1)}</div></div>`;
       const back = document.createElement('div'); back.className='door-back';
       back.innerHTML=`<div class='door-back-content'>${item.title}</div>`;
 
