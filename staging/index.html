@@ -349,7 +349,7 @@
 
     gtag('config', 'G-TQWKRFEPX6');
   </script>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     // ---- Diagonal Snow effect ----
@@ -602,10 +602,26 @@
         });
 
         container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
-        container.addEventListener('click', ()=>{ door.classList.add('shake'); tooltip.classList.add('show'); setTimeout(()=>{door.classList.remove('shake'); tooltip.classList.remove('show');},2000); });
+        container.addEventListener('click', ()=>{
+          gtag('event', 'door_locked_clicked', {
+            day: day
+          });
+          door.classList.add('shake');
+          tooltip.classList.add('show');
+          setTimeout(()=>
+            {
+              door.classList.remove('shake');
+              tooltip.classList.remove('show');
+            },2000);
+        });
+
       } else {
         if((index + 1) === currentDay) door.classList.add('today');
         container.addEventListener('click', ()=>{
+          gtag('event', 'door_opened', {
+            day: day
+          });
+
           // Create sparkle burst
           const rect = container.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
@@ -692,6 +708,10 @@
 
     actionButton.onclick = () => {
       console.log("▶️ Action button clicked:", a);
+      gtag('event', 'action_clicked', {
+        day: day,
+        action_type: a.type
+      });
 
       switch (a.type) {
         case "share":
