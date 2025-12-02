@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rättvisa Malmö — Advent Calendar</title>
+  <title>Rättvisa Malmö — Adventskalender</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=MuseoModerno:wght@300;900&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -340,6 +340,16 @@
     </div>
   </div>
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQWKRFEPX6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-TQWKRFEPX6');
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     // ---- Diagonal Snow effect ----
@@ -592,10 +602,26 @@
         });
 
         container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
-        container.addEventListener('click', ()=>{ door.classList.add('shake'); tooltip.classList.add('show'); setTimeout(()=>{door.classList.remove('shake'); tooltip.classList.remove('show');},2000); });
+        container.addEventListener('click', ()=>{
+          gtag('event', 'door_locked_clicked', {
+            day: (index + 1)
+          });
+          door.classList.add('shake');
+          tooltip.classList.add('show');
+          setTimeout(()=>
+            {
+              door.classList.remove('shake');
+              tooltip.classList.remove('show');
+            },2000);
+        });
+
       } else {
         if((index + 1) === currentDay) door.classList.add('today');
         container.addEventListener('click', ()=>{
+          gtag('event', 'door_opened', {
+            day: (index + 1)
+          });
+
           // Create sparkle burst
           const rect = container.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
@@ -682,6 +708,10 @@
 
     actionButton.onclick = () => {
       console.log("▶️ Action button clicked:", a);
+      gtag('event', 'action_clicked', {
+        day: day,
+        action_type: a.type
+      });
 
       switch (a.type) {
         case "share":
@@ -757,4 +787,3 @@
 
 </body>
 </html>
-
