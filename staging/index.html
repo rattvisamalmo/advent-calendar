@@ -604,7 +604,7 @@
         container.addEventListener('mouseleave',()=>{ tooltip.classList.remove('show'); });
         container.addEventListener('click', ()=>{
           gtag('event', 'door_locked_clicked', {
-            day: day
+            day: (index + 1)
           });
           door.classList.add('shake');
           tooltip.classList.add('show');
@@ -619,7 +619,7 @@
         if((index + 1) === currentDay) door.classList.add('today');
         container.addEventListener('click', ()=>{
           gtag('event', 'door_opened', {
-            day: day
+            day: (index + 1)
           });
 
           // Create sparkle burst
