@@ -466,6 +466,8 @@
                 type: r.action_type || "",
                 url: r.action_url || "",
                 to: r.action_to || "",
+                cc: r.action_cc || "",
+                bcc: r.action_bcc || "",
                 subject: r.action_subject || "",
                 body: r.action_body || "",
                 script: r.action_script || "",
@@ -496,11 +498,15 @@
   /* ============================================================
      MAILTO BUILDER
      ============================================================ */
-  function buildMailto(to, subject, body) {
+  function buildMailto(to, cc, bcc, subject, body) {
     console.log("✉️ Building mailto link:", { to, subject, body });
 
     const safeTo = Array.isArray(to) ? to.join(",") : to || "";
+    const safeCC = Array.isArray(cc) ? cc.join(",") : cc || "";
+    const safeBCC = Array.isArray(bcc) ? bcc.join(",") : bcc || "";
     const parts = [];
+    if(safeCC) parts.push("cc=" + encodeURIComponent(safeCC));
+    if(safeBCC) parts.push("bcc=" + encodeURIComponent(safeBCC));
     if (subject) parts.push("subject=" + encodeURIComponent(subject));
     if (body) parts.push("body=" + encodeURIComponent(body));
     return "mailto:" + safeTo + (parts.length ? "?" + parts.join("&") : "");
@@ -731,11 +737,11 @@
           break;
 
         case "mailto":
-          window.location.href = buildMailto(a.to, a.subject, a.body);
+          window.location.href = buildMailto(a.to, a.cc, a.bcc, a.subject, a.body);
           break;
 
         case "mailto-multi":
-          window.location.href = buildMailto(a.multi_to, a.subject, a.body);
+          window.location.href = buildMailto(a.multi_to, a.cc, a.bcc, a.subject, a.body);
           break;
 
         case 'copy':
