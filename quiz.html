@@ -416,7 +416,7 @@
     </div>
    </div>
    <div id="difficulty-screen">
-    <div class="difficulty-selector"><button class="difficulty-btn" data-difficulty="easy" id="easy-btn"> <span id="easy-label-text">Justice Rookie</span> <span class="difficulty-level">(Easy)</span> </button> <button class="difficulty-btn" data-difficulty="medium" id="medium-btn"> <span id="medium-label-text">Justice Sidekick</span> <span class="difficulty-level">(Medium)</span> </button> <button class="difficulty-btn" data-difficulty="hard" id="hard-btn"> <span id="hard-label-text">Justice Hero</span> <span class="difficulty-level">(Hard)</span> </button>
+    <div class="difficulty-selector"><button class="difficulty-btn" data-difficulty="lätt" id="easy-btn"> <span id="easy-label-text">Justice Rookie</span> <span class="difficulty-level">(Lätt)</span> </button> <button class="difficulty-btn" data-difficulty="medium" id="medium-btn"> <span id="medium-label-text">Justice Sidekick</span> <span class="difficulty-level">(Medium)</span> </button> <button class="difficulty-btn" data-difficulty="svårt" id="hard-btn"> <span id="hard-label-text">Justice Hero</span> <span class="difficulty-level">(Svårt)</span> </button>
     </div>
    </div>
    <div id="quiz-screen" style="display: none;"><button class="back-arrow-btn" id="back-arrow-btn" onclick="location.reload()">← Tillbaka</button>
@@ -501,10 +501,10 @@
     let selectedDifficulty = '';
     
     // Load unlock status from localStorage
-    let unlockedDifficulties = JSON.parse(localStorage.getItem('unlockedDifficulties') || '["easy"]');
+    let unlockedDifficulties = JSON.parse(localStorage.getItem('unlockedDifficulties') || '["lätt"]');
     
     // Load overall scores from localStorage
-    let overallScores = JSON.parse(localStorage.getItem('overallScores') || '{"easy": 0, "medium": 0, "hard": 0}');
+    let overallScores = JSON.parse(localStorage.getItem('overallScores') || '{"lätt": 0, "medium": 0, "svårt": 0}');
 
     // Background floating emojis
     function createBackgroundEmojis() {
@@ -716,15 +716,15 @@
         localStorage.setItem('overallScores', JSON.stringify(overallScores));
         
         // Unlock next difficulty
-        if (selectedDifficulty === 'easy' && !unlockedDifficulties.includes('medium')) {
+        if (selectedDifficulty === 'lätt' && !unlockedDifficulties.includes('medium')) {
           unlockedDifficulties.push('medium');
           localStorage.setItem('unlockedDifficulties', JSON.stringify(unlockedDifficulties));
-        } else if (selectedDifficulty === 'medium' && !unlockedDifficulties.includes('hard')) {
-          unlockedDifficulties.push('hard');
+        } else if (selectedDifficulty === 'medium' && !unlockedDifficulties.includes('svårt')) {
+          unlockedDifficulties.push('svårt');
           localStorage.setItem('unlockedDifficulties', JSON.stringify(unlockedDifficulties));
         }
         
-        if (selectedDifficulty === 'easy') {
+        if (selectedDifficulty === 'lätt') {
           badgeEmoji = '⚖️';
           badgeTitle = window.elementSdk?.config?.easy_label || defaultConfig.easy_label;
         } else if (selectedDifficulty === 'medium') {
@@ -736,7 +736,7 @@
         }
         
         let titleMessage;
-        if (selectedDifficulty === 'easy') {
+        if (selectedDifficulty === 'lätt') {
           titleMessage = `You are now a ${badgeTitle}!`;
         } else if (selectedDifficulty === 'medium') {
           titleMessage = `You've advanced to become a ${badgeTitle}!`;
@@ -746,10 +746,10 @@
         
         resultMessage = `${titleMessage}<br><br>Du fick ${correctAnswers} av ${currentQuestions.length} rätt (${percentage}%)`;
         
-        if (selectedDifficulty === 'easy' && unlockedDifficulties.includes('medium') && unlockedDifficulties.length === 2) {
+        if (selectedDifficulty === 'lätt' && unlockedDifficulties.includes('medium') && unlockedDifficulties.length === 2) {
           resultMessage += '<br><br>🎉 Du har låst upp Medium svårighetsgrad!';
         } else if (selectedDifficulty === 'medium' && unlockedDifficulties.includes('hard') && unlockedDifficulties.length === 3) {
-          resultMessage += '<br><br>�� Du har låst upp Hard svårighetsgrad!';
+          resultMessage += '<br><br>�� Du har låst upp Svårt svårighetsgrad!';
         }
         
         createCelebrationEmojis();
@@ -835,9 +835,9 @@
       // Individual scores
       ctx.font = '45px Arial';
       const yStart = 900;
-      ctx.fillText(`Easy: ${overallScores.easy}/5`, canvas.width / 2, yStart);
+      ctx.fillText(`Lätt: ${overallScores.easy}/5`, canvas.width / 2, yStart);
       ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
-      ctx.fillText(`Hard: ${overallScores.hard}/5`, canvas.width / 2, yStart + 200);
+      ctx.fillText(`Svårt: ${overallScores.hard}/5`, canvas.width / 2, yStart + 200);
 
       // CTA
       ctx.fillStyle = '#dd6031';
