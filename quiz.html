@@ -424,237 +424,40 @@
       font_size: 16
     };
 
-    // Embedded questions - all questions organized by difficulty
-    const allQuestions = [
-      // EASY QUESTIONS
-      {
-        question: "Which of the following companies that Malmöstad has a contract with are involved in grave human rights violations?",
-        answer_a: "WSP",
-        answer_b: "DNB",
-        answer_c: "Atea",
-        answer_d: "All of the above",
-        correct_answer: "d",
-        difficulty: "easy"
-      },
-      {
-        question: "How much does Malmö spend on procurement every year?",
-        answer_a: "500 Million SEK",
-        answer_b: "2,5 Billion SEK",
-        answer_c: "11 Billion SEK",
-        answer_d: "13 Billion SEK",
-        correct_answer: "c",
-        difficulty: "easy"
-      },
-      {
-        question: "What is our campaign's slogan?",
-        answer_a: "Vi köper det inte",
-        answer_b: "Vi köper det",
-        answer_c: "Vi frågar inte, vi köper bara",
-        answer_d: "Malmö först, rättvisa sen",
-        correct_answer: "a",
-        difficulty: "easy"
-      },
-      {
-        question: "Which of these companies helped build a railway line in the illegal settlements?",
-        answer_a: "SJ",
-        answer_b: "WSP",
-        answer_c: "Skånetrafiken",
-        answer_d: "DSP",
-        correct_answer: "b",
-        difficulty: "easy"
-      },
-      {
-        question: "How many people support the Rättvisa Malmö initiative?",
-        answer_a: "~200",
-        answer_b: "More than 1,384",
-        answer_c: "790",
-        answer_d: "Less than 1,100",
-        correct_answer: "b",
-        difficulty: "easy"
-      },
-      {
-        question: "Which of these organizations endorse the campaign?",
-        answer_a: "Malmö Antirasistiska Förening",
-        answer_b: "Fridays For Future Malmö",
-        answer_c: "Palestinagruppen Malmö",
-        answer_d: "All of the above",
-        correct_answer: "d",
-        difficulty: "easy"
-      },
-      {
-        question: "What is the main goal of the Rättvisa Malmö campaign?",
-        answer_a: "Introduce an Ethical Procurement Policy",
-        answer_b: "Lower Malmö's taxes",
-        answer_c: "Increase public spending on tech companies",
-        answer_d: "Promote tourism in Malmö",
-        correct_answer: "a",
-        difficulty: "easy"
-      },
-      {
-        question: "Who runs Rättvisa Malmö?",
-        answer_a: "Political parties",
-        answer_b: "Malmö municipality",
-        answer_c: "Malmö residents",
-        answer_d: "International NGOs",
-        correct_answer: "c",
-        difficulty: "easy"
-      },
-      {
-        question: "What does the campaign want to stop public money from supporting?",
-        answer_a: "Luxury hotels",
-        answer_b: "Human rights abuses",
-        answer_c: "Fashion brands",
-        answer_d: "Restaurants",
-        correct_answer: "b",
-        difficulty: "easy"
-      },
-      {
-        question: "Which of these corporations supports expansion of coal, oil and gas extraction?",
-        answer_a: "DNB",
-        answer_b: "HP",
-        answer_c: "Volvo",
-        answer_d: "IKEA",
-        correct_answer: "a",
-        difficulty: "easy"
-      },
-      // MEDIUM QUESTIONS
-      {
-        question: "Why does the campaign argue an Ethical Procurement Policy is necessary?",
-        answer_a: "Current rules allow deals with unethical companies",
-        answer_b: "It reduces taxes",
-        answer_c: "It increases tourist income",
-        answer_d: "It boosts Malmö's population",
-        correct_answer: "a",
-        difficulty: "medium"
-      },
-      {
-        question: "What value does the campaign emphasise as central to Malmö's role in society?",
-        answer_a: "Economic competition",
-        answer_b: "Technological advancement",
-        answer_c: "Justice and accountability",
-        answer_d: "Sports and culture",
-        correct_answer: "c",
-        difficulty: "medium"
-      },
-      {
-        question: "What type of violations are specifically mentioned in the campaign's materials?",
-        answer_a: "Patent violations",
-        answer_b: "Parking violations",
-        answer_c: "Human rights abuses and war crimes",
-        answer_d: "Fishing regulation violations",
-        correct_answer: "c",
-        difficulty: "medium"
-      },
-      {
-        question: "What does the campaign want Malmö to take a stand against?",
-        answer_a: "Increased advertising",
-        answer_b: "Exploitation and injustice",
-        answer_c: "Higher school fees",
-        answer_d: "Traffic congestion",
-        correct_answer: "b",
-        difficulty: "medium"
-      },
-      {
-        question: "What does the campaign ask Malmö residents to do?",
-        answer_a: "Boycott public transport",
-        answer_b: "Vote for the initiative demanding ethical procurement",
-        answer_c: "Vote in national elections",
-        answer_d: "Donate money to the municipality",
-        correct_answer: "b",
-        difficulty: "medium"
-      },
-      {
-        question: "When did Rättvisa Malmö launch?",
-        answer_a: "June, 2025",
-        answer_b: "May, 2025",
-        answer_c: "September, 2025",
-        answer_d: "July, 2025",
-        correct_answer: "d",
-        difficulty: "medium"
-      },
-      // HARD QUESTIONS
-      {
-        question: "Which of these is a consequence of buying from gravely unethical companies?",
-        answer_a: "Supporting exploitation and abuses",
-        answer_b: "Lower internet speed",
-        answer_c: "Increased tourism",
-        answer_d: "More shopping malls",
-        correct_answer: "a",
-        difficulty: "hard"
-      },
-      {
-        question: "What flaw in Malmö's current procurement system does the campaign highlight?",
-        answer_a: "Budgets are approved too slowly",
-        answer_b: "Contracts are too transparent",
-        answer_c: "Existing guidelines are insufficient",
-        answer_d: "Too many local companies are favoured",
-        correct_answer: "c",
-        difficulty: "hard"
-      },
-      {
-        question: "What does the campaign want Malmö to stop supporting through its public spending?",
-        answer_a: "Companies that lack innovation",
-        answer_b: "Companies tied to grave human rights violations",
-        answer_c: "Companies with low credit scores",
-        answer_d: "Companies that operate outside Sweden",
-        correct_answer: "b",
-        difficulty: "hard"
-      },
-      {
-        question: "The proposed Ethical Procurement Policy would ensure that Malmö only buys from companies that����",
-        answer_a: "Have at least 1,000 employees",
-        answer_b: "Follow international human rights standards",
-        answer_c: "Are based in the EU",
-        answer_d: "Offer the lowest price",
-        correct_answer: "b",
-        difficulty: "hard"
-      },
-      {
-        question: "Which sector does the campaign focus on reforming?",
-        answer_a: "Public procurement",
-        answer_b: "Public transportation",
-        answer_c: "Waste management",
-        answer_d: "Housing development",
-        correct_answer: "a",
-        difficulty: "hard"
-      },
-      {
-        question: "Why is Malmö's procurement policy considered impactful by the campaign?",
-        answer_a: "Malmö is Sweden's largest exporter",
-        answer_b: "The city's large procurement budget influences global supply chains",
-        answer_c: "Malmö has no private sector alternatives",
-        answer_d: "Procurement determines the city's zoning laws",
-        correct_answer: "b",
-        difficulty: "hard"
-      },
-      {
-        question: "Why are companies like WSP mentioned in the campaign?",
-        answer_a: "Their products are too expensive",
-        answer_b: "They don't offer warranty services",
-        answer_c: "They do not operate in Europe",
-        answer_d: "They have been linked to serious human rights violations",
-        correct_answer: "d",
-        difficulty: "hard"
-      },
-      {
-        question: "Which principle underlies the call for ethical procurement?",
-        answer_a: "Public money should reflect public values",
-        answer_b: "Cheaper products are always better",
-        answer_c: "Procurement is purely a technical process",
-        answer_d: "Only local companies should win contracts",
-        correct_answer: "a",
-        difficulty: "hard"
-      },
-      {
-        question: "What organization was the first to endorse the campaign?",
-        answer_a: "Malmö Antirasistiska Förening",
-        answer_b: "Palestinagruppen Malmö",
-        answer_c: "Ta Tillbaka Framtiden",
-        answer_d: "Fridays for Future",
-        correct_answer: "a",
-        difficulty: "hard"
-      }
-    ];
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTgJmpqSvFKU4aOdOK2m1CZn16ckxFMfQol4dlNKAOhSwOE3DnsdqXK-eeYMNtdo2os9Agp8qBvzGdS/pub?gid=1262968788&single=true&output=csv";
+
+    let allQuestions = [];
+
+    async function loadQuestionsFromSheet() {
+      const res = await fetch(SHEET_CSV_URL);
+      const text = await res.text();
+
+      const rows = text.trim().split("\n");
+      const headers = rows.shift().split(",");
+
+      allQuestions = rows.map(row => {
+        const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        const obj = {};
+
+        headers.forEach((h, i) => {
+          obj[h.trim()] = values[i]?.replace(/^"|"$/g, "").trim();
+        });
+
+        return {
+          question: obj.question,
+          answer_a: obj.answer_a,
+          answer_b: obj.answer_b,
+          answer_c: obj.answer_c,
+          answer_d: obj.answer_d,
+          correct_answer: obj.correct_answer.toLowerCase(),
+          difficulty: obj.difficulty.toLowerCase()
+        };
+      });
+
+      console.log("Loaded questions:", allQuestions);
+    }
+
 
     let currentQuestions = [];
     let currentQuestionIndex = 0;
@@ -741,7 +544,9 @@
     });
     
     // Initialize button states
+    await loadQuestionsFromSheet();
     updateDifficultyButtons();
+
 
     function startQuiz() {
       let filteredQuestions = allQuestions.filter(q => q.difficulty === selectedDifficulty);
