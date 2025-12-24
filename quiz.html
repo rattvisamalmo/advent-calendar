@@ -855,7 +855,7 @@
 
       // Tagline
       ctx.fillStyle = '#311e10';
-      ctx.font = 'bold 80px Arial';
+      ctx.font = '80px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('Vi köper det inte!', canvas.width / 2, 350);
 
@@ -878,8 +878,9 @@
 
 
       ctx.fillStyle = '#311e10';
-      ctx.font = '60px Arial';
-      ctx.fillText('Testa din kunskap om vår kampanj!', canvas.width / 2, 1650);
+      ctx.font = 'bold 60px Arial';
+      ctx.fillText('Testa din kunskap', canvas.width / 2, 1650);
+      ctx.fillText('om vår kampanj!', canvas.width / 2, 1700);
 
       const shareText = `Jag fick ${totalScore}/${maxPossibleScore} på quizet! 🎓`;
 
