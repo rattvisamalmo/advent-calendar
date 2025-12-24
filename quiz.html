@@ -864,16 +864,14 @@
       ctx.font = 'bold 120px Arial';
       ctx.textAlign = 'center';
       ctx.fillText("Jag fick", canvas.width / 2, 700);
-      ctx.fillStyle = '#dd6031';
       const scoreText = totalScore + "/" + maxPossibleScore;
       ctx.fillText(scoreText, canvas.width / 2, 900);
-      ctx.fillStyle = '#311e10';
       ctx.fillText("på quizet!", canvas.width / 2, 1100);
 
       // Individual scores
       ctx.fillStyle = '#311e10';
       ctx.font = '65px Arial';
-      const yStart = 1200;
+      const yStart = 1300;
       ctx.fillText(`Lätt: ${overallScores.lätt}/5`, canvas.width / 2, yStart);
       ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
       ctx.fillText(`Svårt: ${overallScores.svårt}/5`, canvas.width / 2, yStart + 200);
@@ -881,7 +879,7 @@
 
       ctx.fillStyle = '#311e10';
       ctx.font = '60px Arial';
-      ctx.fillText('Testa din kunskap om vår kampanj!', canvas.width / 2, 1500);
+      ctx.fillText('Testa din kunskap om vår kampanj!', canvas.width / 2, 1650);
 
       const shareText = `Jag fick ${totalScore}/${maxPossibleScore} på quizet! 🎓`;
 
