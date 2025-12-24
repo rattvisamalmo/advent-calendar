@@ -840,9 +840,24 @@
       ctx.textAlign = 'center';
       ctx.fillText('Rättvisa Malmö Quiz', canvas.width / 2, 200);
 
-      // Emoji
-      ctx.font = '200px Arial';
-      ctx.fillText('⚖️', canvas.width / 2, 450);
+      // Logo
+      const imageUrl = "https://raw.githubusercontent.com/rattvisamalmo/advent-calendar/main/1.png";
+      const logo = new Image();
+      logo.crossOrigin = "anonymous"; // important for canvas export
+
+      await new Promise((resolve, reject) => {
+        logo.onload = resolve;
+        logo.onerror = reject;
+        logo.src = logoUrl;
+      });
+
+      // Draw logo centered
+      const logoWidth = 260;
+      const logoHeight = 260;
+      const logoX = (canvas.width - logoWidth) / 2;
+      const logoY = 300;
+
+      ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
 
       // Total score
       ctx.fillStyle = '#311e10';
@@ -866,10 +881,9 @@
 
       ctx.fillStyle = '#311e10';
       ctx.font = '40px Arial';
-      ctx.fillText('Test your knowledge at', canvas.width / 2, 1500);
-      ctx.fillText('Rättvisa Malmö Quiz', canvas.width / 2, 1570);
+      ctx.fillText('Testa din kunskap om vår kampanj!', canvas.width / 2, 1500);
 
-      const shareText = `🎯 I scored ${totalScore}/${maxPossibleScore} on the Rättvisa Malmö Quiz!\n\n⚖️ Vi köper det inte!`;
+      const shareText = `Jag fick ${totalScore}/${maxPossibleScore} på quizet! 🎓`;
 
       // Convert to blob
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -878,7 +892,7 @@
       // 💡 FIXED: Try share() WITHOUT canShare()
       try {
         await navigator.share({
-          title: 'Rättvisa Malmö Quiz Score',
+          title: 'Mitt quizresultat!',
           text: shareText,
           files: [file]
         });
