@@ -872,15 +872,18 @@
       ctx.fillStyle = '#311e10';
       ctx.font = '65px Arial';
       const yStart = 1300;
-      ctx.fillText(`Lätt: ${overallScores.lätt}/5`, canvas.width / 2, yStart);
-      ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
-      ctx.fillText(`Svårt: ${overallScores.svårt}/5`, canvas.width / 2, yStart + 200);
+      ctx.fillText(`Lätt`, 216, yStart);
+      ctx.fillText(`Medium`, 432, yStart);
+      ctx.fillText(`Svårt`, 648, yStart);
+      ctx.fillText(`${overallScores.lätt}/5`, 216, yStart + 100);
+      ctx.fillText(`${overallScores.medium}/5`, 432, yStart + 100);
+      ctx.fillText(`${overallScores.svårt}/5`, 648, yStart + 100);
 
 
       ctx.fillStyle = '#311e10';
-      ctx.font = 'bold 60px Arial';
-      ctx.fillText('Testa din kunskap', canvas.width / 2, 1650);
-      ctx.fillText('om vår kampanj!', canvas.width / 2, 1700);
+      ctx.font = 'bold 70px Arial';
+      ctx.fillText('Testa din kunskap om', canvas.width / 2, 1650);
+      ctx.fillText('vår kampanj!', canvas.width / 2, 1750);
 
       const shareText = `Jag fick ${totalScore}/${maxPossibleScore} på quizet! 🎓`;
 
