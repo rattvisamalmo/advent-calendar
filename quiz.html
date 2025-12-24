@@ -846,8 +846,8 @@
       });
 
       // Draw logo centered
-      const logoWidth = 423;
-      const logoHeight = 70;
+      const logoWidth = 846;
+      const logoHeight = 140;
       const logoX = (canvas.width - logoWidth) / 2;
       const logoY = 200;
 
@@ -856,14 +856,17 @@
       // Tagline
       ctx.fillStyle = '#311e10';
       ctx.font = 'bold 55px Arial';
+      ctx.textAlign = 'center';
       ctx.fillText('Vi köper det inte!', canvas.width / 2, 320);
 
       // My Score
       ctx.fillStyle = '#dd6031';
       ctx.font = 'bold 120px Arial';
       ctx.textAlign = 'center';
-      const text = "Jag fick " + totalScore + "/" + maxPossibleScore + " på quizet!";
-      ctx.fillText(text, canvas.width / 2, 400);
+      ctx.fillText("Jag fick", canvas.width / 2, 400);
+      const scoreText = totalScore + "/" + maxPossibleScore;
+      ctx.fillText(scoreText, canvas.width / 2, 600);
+      ctx.fillText("på quizet!", canvas.width / 2, 800);
 
       // Individual scores
       ctx.font = '65px Arial';
