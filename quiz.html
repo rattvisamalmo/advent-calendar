@@ -834,14 +834,8 @@
       ctx.fillStyle = '#faf8f3';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Title
-      ctx.fillStyle = '#dd6031';
-      ctx.font = 'bold 80px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Rättvisa Malmö Quiz', canvas.width / 2, 200);
-
       // Logo
-      const logoUrl = "https://raw.githubusercontent.com/rattvisamalmo/advent-calendar/main/1.png";
+      const logoUrl = "https://raw.githubusercontent.com/rattvisamalmo/advent-calendar/main/3.png";
       const logo = new Image();
       logo.crossOrigin = "anonymous"; // important for canvas export
 
@@ -852,35 +846,35 @@
       });
 
       // Draw logo centered
-      const logoWidth = 260;
-      const logoHeight = 260;
+      const logoWidth = 423;
+      const logoHeight = 70;
       const logoX = (canvas.width - logoWidth) / 2;
-      const logoY = 300;
+      const logoY = 200;
 
       ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
 
-      // Total score
+      // Tagline
       ctx.fillStyle = '#311e10';
-      ctx.font = 'bold 100px Arial';
-      ctx.fillText(`${totalScore}/${maxPossibleScore}`, canvas.width / 2, 650);
+      ctx.font = 'bold 55px Arial';
+      ctx.fillText('Vi köper det inte!', canvas.width / 2, 320);
 
-      ctx.font = '50px Arial';
-      ctx.fillText('Total Score', canvas.width / 2, 730);
+      // My Score
+      ctx.fillStyle = '#dd6031';
+      ctx.font = 'bold 120px Arial';
+      ctx.textAlign = 'center';
+      const text = "Jag fick " + totalScore + "/" + maxPossibleScore + " på quizet!";
+      ctx.fillText(text, canvas.width / 2, 400);
 
       // Individual scores
-      ctx.font = '45px Arial';
+      ctx.font = '65px Arial';
       const yStart = 900;
       ctx.fillText(`Lätt: ${overallScores.lätt}/5`, canvas.width / 2, yStart);
       ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
       ctx.fillText(`Svårt: ${overallScores.svårt}/5`, canvas.width / 2, yStart + 200);
 
-      // CTA
-      ctx.fillStyle = '#dd6031';
-      ctx.font = 'bold 55px Arial';
-      ctx.fillText('Vi köper det inte!', canvas.width / 2, 1400);
 
       ctx.fillStyle = '#311e10';
-      ctx.font = '40px Arial';
+      ctx.font = '60px Arial';
       ctx.fillText('Testa din kunskap om vår kampanj!', canvas.width / 2, 1500);
 
       const shareText = `Jag fick ${totalScore}/${maxPossibleScore} på quizet! 🎓`;
