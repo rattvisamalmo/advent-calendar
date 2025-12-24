@@ -637,6 +637,8 @@
       const question = currentQuestions[currentQuestionIndex];
       const isLastQuestion = currentQuestionIndex === currentQuestions.length - 1;
       
+      console.log("Showing question:", question);
+
       document.getElementById('question-number').textContent = `Fråga ${currentQuestionIndex + 1} av ${currentQuestions.length}`;
       document.getElementById('question-text').textContent = question.question;
       document.getElementById('progress-text').textContent = `${currentQuestionIndex}/${currentQuestions.length}`;
@@ -692,6 +694,7 @@
       currentQuestionIndex++;
       
       if (currentQuestionIndex < currentQuestions.length) {
+        console.log("Showing next questions:", currentQuestionIndex);
         showQuestion();
       } else {
         showCompletion();
@@ -761,7 +764,7 @@
         resultMessage = `Du fick ${correctAnswers} av ${currentQuestions.length} rätt (${percentage}%)<br><br>Du behöver minst 75% för att klara nivån.`;
       }
       
-      const totalScore = overallScores.easy + overallScores.medium + overallScores.hard;
+      const totalScore = overallScores.lätt + overallScores.medium + overallScores.svårt;
       const maxPossibleScore = 15; // 5 questions per difficulty level
       
       completionScreen.innerHTML = `
@@ -803,7 +806,7 @@
     }
 
     async function shareScore() {
-      const totalScore = overallScores.easy + overallScores.medium + overallScores.hard;
+      const totalScore = overallScores.lätt + overallScores.medium + overallScores.svårt;
       const maxPossibleScore = 15;
 
       // Create canvas
@@ -837,9 +840,9 @@
       // Individual scores
       ctx.font = '45px Arial';
       const yStart = 900;
-      ctx.fillText(`Lätt: ${overallScores.easy}/5`, canvas.width / 2, yStart);
+      ctx.fillText(`Lätt: ${overallScores.lätt}/5`, canvas.width / 2, yStart);
       ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
-      ctx.fillText(`Svårt: ${overallScores.hard}/5`, canvas.width / 2, yStart + 200);
+      ctx.fillText(`Svårt: ${overallScores.svårt}/5`, canvas.width / 2, yStart + 200);
 
       // CTA
       ctx.fillStyle = '#dd6031';
