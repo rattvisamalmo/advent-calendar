@@ -364,12 +364,48 @@
         width: 100%;
       }
     }
+
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: #faf8f3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #ffea94;
+      border-top: 6px solid #dd6031;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #311e10;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
+  <div id="loading-overlay">
+    <div class="spinner" id="loading-spinner"></div>
+    <div class="loading-text">Laddar quiz…</div>
+  </div>
+
   <div class="container">
    <div class="header">
     <div class="title" id="quiz-title">
@@ -545,9 +581,33 @@
     
     // Initialize button states
     (async function initQuiz() {
+      try {
+        await loadQuestionsFromSheet();
+      } catch (err) {
+        console.error("Failed to load quiz data", err);
+        const overlay = document.getElementById("loading-overlay");
+        const spinner = overlay.querySelector(".spinner");
+        const text = overlay.querySelector(".loading-text");
+
+        // Remove spinner, keep text
+        if (spinner) spinner.remove();
+
+        text.textContent = "Kunde inte ladda quizet 😔";
+        text.style.fontSize = "1.1rem";
+        text.style.maxWidth = "320px";
+        text.style.textAlign = "center";
+        return;
+      }
+
       updateDifficultyButtons();
-      await loadQuestionsFromSheet();
+
+      // Hide loading overlay
+      const overlay = document.getElementById("loading-overlay");
+      overlay.style.opacity = "0";
+      overlay.style.transition = "opacity 0.4s ease";
+      setTimeout(() => overlay.remove(), 400);
     })();
+
 
     initQuiz();
 
