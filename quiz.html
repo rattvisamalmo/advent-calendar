@@ -849,28 +849,31 @@
       const logoWidth = 846;
       const logoHeight = 140;
       const logoX = (canvas.width - logoWidth) / 2;
-      const logoY = 200;
+      const logoY = 100;
 
       ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
 
       // Tagline
       ctx.fillStyle = '#311e10';
-      ctx.font = 'bold 55px Arial';
+      ctx.font = 'bold 80px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Vi köper det inte!', canvas.width / 2, 320);
+      ctx.fillText('Vi köper det inte!', canvas.width / 2, 350);
 
       // My Score
-      ctx.fillStyle = '#dd6031';
+      ctx.fillStyle = '#311e10';
       ctx.font = 'bold 120px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText("Jag fick", canvas.width / 2, 400);
+      ctx.fillText("Jag fick", canvas.width / 2, 700);
+      ctx.fillStyle = '#dd6031';
       const scoreText = totalScore + "/" + maxPossibleScore;
-      ctx.fillText(scoreText, canvas.width / 2, 600);
-      ctx.fillText("på quizet!", canvas.width / 2, 800);
+      ctx.fillText(scoreText, canvas.width / 2, 900);
+      ctx.fillStyle = '#311e10';
+      ctx.fillText("på quizet!", canvas.width / 2, 1100);
 
       // Individual scores
+      ctx.fillStyle = '#311e10';
       ctx.font = '65px Arial';
-      const yStart = 900;
+      const yStart = 1200;
       ctx.fillText(`Lätt: ${overallScores.lätt}/5`, canvas.width / 2, yStart);
       ctx.fillText(`Medium: ${overallScores.medium}/5`, canvas.width / 2, yStart + 100);
       ctx.fillText(`Svårt: ${overallScores.svårt}/5`, canvas.width / 2, yStart + 200);
