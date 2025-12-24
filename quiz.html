@@ -544,9 +544,12 @@
     });
     
     // Initialize button states
-    await loadQuestionsFromSheet();
-    updateDifficultyButtons();
+    (async function initQuiz() {
+      updateDifficultyButtons();
+      await loadQuestionsFromSheet();
+    })();
 
+    initQuiz();
 
     function startQuiz() {
       let filteredQuestions = allQuestions.filter(q => q.difficulty === selectedDifficulty);
